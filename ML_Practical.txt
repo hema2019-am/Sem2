@@ -1,0 +1,1768 @@
+Go To the folder path,
+run : py 1.py
+dependcieis install: py -m pip install tensorflow
+py -m pip install --upgrade pip
+
+
+1.Load a CSV dataset. Handle missing values, inconsistent formatting,
+and outliers  
+
+This code:
+Loads a CSV dataset
+Handles missing values using forward fill
+Fixes inconsistent country formatting
+Converts phone columns to numeric
+Detects and handles outliers using IQR method
+Saves cleaned data to an Excel file
+
+import pandas as pd
+
+df = pd.read_csv('/content/customers-100.csv')
+
+# Forward fill
+df.fillna(method='ffill', inplace=True)
+
+# Clean country
+df['Country'] = df['Country'].str.strip()
+
+# Convert phones to numeric
+df['Phone 1'] = pd.to_numeric(df['Phone 1'], errors='coerce')
+df['Phone 2'] = pd.to_numeric(df['Phone 2'], errors='coerce')
+
+# -------- Handle Outliers for Phone 1 --------
+q1_p1 = df['Phone 1'].quantile(0.25)
+q3_p1 = df['Phone 1'].quantile(0.75)
+iqr_p1 = q3_p1 - q1_p1
+
+lower_p1 = q1_p1 - 1.5 * iqr_p1
+upper_p1 = q3_p1 + 1.5 * iqr_p1
+
+df['Phone 1'] = df['Phone 1'].clip(lower_p1, upper_p1)
+
+# -------- Handle Outliers for Phone 2 --------
+q1_p2 = df['Phone 2'].quantile(0.25)
+q3_p2 = df['Phone 2'].quantile(0.75)
+iqr_p2 = q3_p2 - q1_p2
+
+lower_p2 = q1_p2 - 1.5 * iqr_p2
+upper_p2 = q3_p2 + 1.5 * iqr_p2
+
+df['Phone 2'] = df['Phone 2'].clip(lower_p2, upper_p2)
+
+# Save to Excel
+df.to_excel('/content/cleaned_customers.xlsx', index=False)
+
+print(df.head())
+
+2.Load a dataset, calculate descriptive summary statistics, create visualizations using
+different graphs, and identify potential features and target variables.
+Note: Explore Univariate and Bivariate graphs (Matplotlib) and Seaborn for
+visualization
+Relationship between age and ticket price
+Whether older/younger passengers paid more or less
+This code performs exploratory data analysis on the Titanic dataset by generating summary statistics and visualizing the distribution 
+of age and the relationship between age and fare using histogram and scatter plots.
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# -----------------------------
+# Load Dataset
+# -----------------------------
+data = pd.read_excel('/content/titanic3.xls')
+
+# -----------------------------
+# Summary Statistics
+# -----------------------------
+summary_stats = data.describe(include='all')
+print(summary_stats)
+
+# -----------------------------
+# Age Distribution Histogram
+# -----------------------------
+plt.figure(figsize=(10, 6))
+sns.histplot(data['Age'].dropna(), kde=True)
+plt.title('Distribution of Age')
+plt.xlabel('Age')
+plt.ylabel('Frequency')
+plt.show()
+
+# -----------------------------
+# Age vs Fare Scatter Plot
+# -----------------------------
+plt.figure(figsize=(10, 6))
+sns.scatterplot(x='Age', y='fare', data=data)
+plt.title('Age vs Fare')
+plt.xlabel('Age')
+plt.ylabel('Fare')
+plt.show()
+
+3. Create or explore datasets to use all pre-processing routines like label
+encoding, scaling, and binarization.
+
+This code generates a synthetic dataset and performs preprocessing by encoding categorical features, scaling numerical variables, 
+and converting a numerical feature into a binary feature for machine learning preparation.
+Encoding :Encoding is the process of converting categorical (text) data into numerical values so that machine learning algorithms can understand it.
+Scaling : Scaling is the process of bringing numerical features to a common scale.
+Binarization : Binarization converts a numerical feature into binary values (0 or 1) based on a threshold.
+
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import LabelEncoder, StandardScaler, Binarizer
+
+# -----------------------------
+# Create Sample Dataset
+# -----------------------------
+np.random.seed(0)
+
+data = pd.DataFrame({
+    'Feature1': np.random.choice(['A', 'B', 'C'], 100),
+    'Feature2': np.random.randn(100),
+    'Feature3': np.random.randint(1, 100, 100),
+    'Target': np.random.choice([0, 1], 100)
+})
+
+# -----------------------------
+# Label Encoding (Categorical → Numeric)
+# -----------------------------
+label_encoder = LabelEncoder()
+data['Feature1_encoded'] = label_encoder.fit_transform(data['Feature1'])
+
+# -----------------------------
+# Feature Scaling (Standardization)
+# -----------------------------
+scaler = StandardScaler()
+data[['Feature2_scaled', 'Feature3_scaled']] = scaler.fit_transform(
+    data[['Feature2', 'Feature3']]
+)
+
+# -----------------------------
+# Binarization
+# -----------------------------
+binarizer = Binarizer(threshold=50)
+data['Feature3_binarized'] = binarizer.fit_transform(
+    data[['Feature3']]
+)
+
+# -----------------------------
+# Preview Data
+# -----------------------------
+print(data.head())
+
+4. Implement and demonstrate the FIND-S algorithm for finding the most
+specific hypothesis based on a given set of training data samples. Read the training
+data from
+a. CSV file and generate the final specific hypothesis. (Create your dataset) 
+
+
+import csv
+import openpyxl
+
+# -----------------------------
+# Load Excel File
+# -----------------------------
+workbook = openpyxl.load_workbook('/content/enjoysports.xlsx')
+sheet = workbook.active
+
+# -----------------------------
+# Convert Excel to CSV
+# -----------------------------
+with open('temp.csv', 'w', newline='', encoding='utf-8') as csv_file:
+    writer = csv.writer(csv_file)
+    for row in sheet.iter_rows():
+        writer.writerow([cell.value for cell in row])
+
+# -----------------------------
+# Read CSV Data
+# -----------------------------
+num_attributes = 6
+a = []
+
+print("\nThe Given Training Data Set:\n")
+
+with open('temp.csv', 'r', encoding='utf-8') as csvFile:
+    reader = csv.reader(csvFile)
+    for row in reader:
+        a.append(row)
+        print(row)
+
+# -----------------------------
+# Initialize Hypothesis
+# -----------------------------
+print("\nThe initial value of hypothesis:")
+hypothesis = ['0'] * num_attributes
+print(hypothesis)
+
+# Set hypothesis to first training example
+for j in range(num_attributes):
+    hypothesis[j] = a[0][j]
+
+print("\nFind-S: Finding a Maximally Specific Hypothesis\n")
+
+# -----------------------------
+# Find-S Algorithm
+# -----------------------------
+for i in range(len(a)):
+    if a[i][num_attributes] == 'yes':
+        for j in range(num_attributes):
+            if a[i][j] != hypothesis[j]:
+                hypothesis[j] = '?'
+            else:
+                hypothesis[j] = a[i][j]
+
+        print(f"For Training instance No: {i} the hypothesis is {hypothesis}")
+
+# -----------------------------
+# Final Hypothesis
+# -----------------------------
+print("\nThe Maximally Specific Hypothesis for given Training Examples:\n")
+print(hypothesis)
+
+4.Fit a linear regression model on a dataset. Interpret coefficients, make
+predictions, and evaluate performance using metrics like R-squared and
+MSE 
+The code loads a dataset, splits it into training and testing sets, and implements linear regression using gradient descent. It calculates predictions, loss, and gradients, updates parameters 
+iteratively, and visualizes the learning process using an animated regression line.
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
+
+# -----------------------------
+# Load Dataset
+# -----------------------------
+url = 'https://media.geeksforgeeks.org/wp-content/uploads/20240320114716/data_for_lr.csv'
+data = pd.read_csv(url)
+data = data.dropna()
+
+# -----------------------------
+# Train-Test Split
+# -----------------------------
+train_input = np.array(data.x[0:500]).reshape(500, 1)
+train_output = np.array(data.y[0:500]).reshape(500, 1)
+
+test_input = np.array(data.x[500:700]).reshape(-1, 1)
+test_output = np.array(data.y[500:700]).reshape(-1, 1)
+
+
+# -----------------------------
+# Linear Regression Class
+# -----------------------------
+class LinearRegression:
+    def __init__(self):
+        self.parameters = {}
+
+    def forward_propagation(self, train_input):
+        m = self.parameters['m']
+        c = self.parameters['c']
+        predictions = m * train_input + c
+        return predictions
+
+    def cost_function(self, predictions, train_output):
+        cost = np.mean((train_output - predictions) ** 2)
+        return cost
+
+    def backward_propagation(self, train_input, train_output, predictions):
+        derivatives = {}
+        df = (predictions - train_output)
+
+        dm = 2 * np.mean(train_input * df)
+        dc = 2 * np.mean(df)
+
+        derivatives['dm'] = dm
+        derivatives['dc'] = dc
+        return derivatives
+
+    def update_parameters(self, derivatives, learning_rate):
+        self.parameters['m'] -= learning_rate * derivatives['dm']
+        self.parameters['c'] -= learning_rate * derivatives['dc']
+
+    def train(self, train_input, train_output, learning_rate, iters):
+        self.parameters['m'] = -np.random.rand()
+        self.parameters['c'] = -np.random.rand()
+        self.loss = []
+
+        fig, ax = plt.subplots()
+        x_vals = np.linspace(min(train_input), max(train_input), 100)
+
+        line, = ax.plot(
+            x_vals,
+            self.parameters['m'] * x_vals + self.parameters['c'],
+            color='red',
+            label='Regression Line'
+        )
+
+        ax.scatter(train_input, train_output, color='green', label='Training Data')
+        ax.set_ylim(0, max(train_output) + 1)
+
+        def update(frame):
+            predictions = self.forward_propagation(train_input)
+            cost = self.cost_function(predictions, train_output)
+
+            derivatives = self.backward_propagation(
+                train_input, train_output, predictions
+            )
+
+            self.update_parameters(derivatives, learning_rate)
+
+            line.set_ydata(self.parameters['m'] * x_vals + self.parameters['c'])
+            self.loss.append(cost)
+
+            print(f"Iteration = {frame + 1}, Loss = {cost}")
+            return line,
+
+        ani = FuncAnimation(fig, update, frames=iters, interval=200, blit=True)
+        ani.save('linear_regression_A.gif', writer='ffmpeg')
+
+        plt.xlabel('Input')
+        plt.ylabel('Output')
+        plt.title('Linear Regression')
+        plt.legend()
+        plt.show()
+
+        return self.parameters, self.loss
+
+# -----------------------------
+# Train Model
+# -----------------------------
+model = LinearRegression()
+parameters, loss = model.train(train_input, train_output, learning_rate=0.01, iters=50)
+
+print("\nFinal Parameters:")
+print(parameters)
+
+5. Extend linear regression to multiple features. Handle feature selection
+and potential multicollinearity
+
+The code creates correlated features to simulate multicollinearity, calculates VIF to detect it, and compares Linear Regression with Ridge Regression. Ridge regression reduces the effect 
+of multicollinearity using regularization and improves model stability.
+
+import numpy as np
+import pandas as pd
+
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression, Ridge
+from sklearn.metrics import mean_squared_error, r2_score
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+
+# -----------------------------
+# Generate Synthetic Data
+# -----------------------------
+np.random.seed(0)
+size = 300
+
+X1 = np.random.normal(0, 1, size)
+X2 = X1 + np.random.normal(0, 0.1, size)
+X3 = 0.5 * X1 + 0.5 * X2 + np.random.normal(0, 0.1, size)
+
+Y = 2 * X1 + 3 * X2 + 1.5 * X3 + np.random.normal(0, 1, size)
+
+df = pd.DataFrame({
+    'X1': X1,
+    'X2': X2,
+    'X3': X3,
+    'Y': Y
+})
+
+# -----------------------------
+# Calculate VIF (Multicollinearity)
+# -----------------------------
+vif_data = pd.DataFrame()
+vif_data["feature"] = df.columns[:-1]
+vif_data["VIF"] = [
+    variance_inflation_factor(df[['X1', 'X2', 'X3']].values, i)
+    for i in range(3)
+]
+
+# -----------------------------
+# Train-Test Split
+# -----------------------------
+X_train, X_test, y_train, y_test = train_test_split(
+    df[['X1', 'X2', 'X3']],
+    df['Y'],
+    test_size=0.2,
+    random_state=42
+)
+
+# -----------------------------
+# Linear Regression
+# -----------------------------
+lr_model = LinearRegression()
+lr_model.fit(X_train, y_train)
+y_pred_lr = lr_model.predict(X_test)
+
+# -----------------------------
+# Ridge Regression
+# -----------------------------
+ridge_model = Ridge(alpha=100)
+ridge_model.fit(X_train, y_train)
+y_pred_ridge = ridge_model.predict(X_test)
+
+# -----------------------------
+# Evaluation Metrics
+# -----------------------------
+mse_lr = mean_squared_error(y_test, y_pred_lr)
+r2_lr = r2_score(y_test, y_pred_lr)
+
+mse_ridge = mean_squared_error(y_test, y_pred_ridge)
+r2_ridge = r2_score(y_test, y_pred_ridge)
+
+# -----------------------------
+# Results
+# -----------------------------
+print("Variance Inflation Factor (VIF):")
+print(vif_data)
+
+print("\nLinear Regression - MSE: {:.2f}, R2: {:.3f}".format(mse_lr, r2_lr))
+print("Ridge Regression  - MSE: {:.2f}, R2: {:.3f}".format(mse_ridge, r2_ridge))
+
+
+6.Perform binary classification using logistic regression. Calculate accuracy,
+precision, recall, and understand the ROC curve.
+
+Trains Multiple Regression Models
+(a) Linear Regression
+
+Normal regression (no regularization)
+
+(b) Ridge Regression (L2)
+
+Penalizes large coefficients
+
+Reduces multicollinearity impact
+
+(c) Lasso Regression (L1)
+
+Can shrink some coefficients to zero
+
+Performs feature selection
+
+(d) Elastic Net
+
+Combination of Ridge + Lasso
+
+Compares different regularization techniques. 
+
+The code trains multiple regression models on the Boston Housing dataset and compares their mean squared error and coefficients. It demonstrates how Ridge, Lasso, and Elastic Net regularization
+ help control overfitting and multicollinearity.
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
+
+# -----------------------------
+# Load Boston Dataset Manually
+# -----------------------------
+data_url = "http://lib.stat.cmu.edu/datasets/boston"
+
+raw_df = pd.read_csv(
+    data_url,
+    sep=r"\s+",
+    skiprows=22,
+    header=None
+)
+
+data = np.hstack([
+    raw_df.values[::2, :],
+    raw_df.values[1::2, :2]
+])
+
+target = raw_df.values[1::2, 2]
+
+boston_dataset = pd.DataFrame(
+    data,
+    columns=[
+        'CRIM', 'ZN', 'INDUS', 'CHAS', 'NOX', 'RM', 'AGE',
+        'DIS', 'RAD', 'TAX', 'PTRATIO', 'B', 'LSTAT'
+    ]
+)
+
+boston_dataset['MEDV'] = target
+
+print("Boston dataset loaded manually due to ethical concerns with load_boston().")
+
+# -----------------------------
+# Feature vs Target Plots
+# -----------------------------
+plt.style.use('ggplot')
+fig = plt.figure(figsize=(18, 18))
+
+feature_names = boston_dataset.columns[:-1]
+
+for index, feature_name in enumerate(feature_names):
+    ax = fig.add_subplot(4, 4, index + 1)
+    ax.scatter(boston_dataset[feature_name], boston_dataset['MEDV'])
+    ax.set_ylabel('House Price', size=12)
+    ax.set_xlabel(feature_name, size=12)
+
+plt.show()
+
+# -----------------------------
+# Prepare Data
+# -----------------------------
+boston_pd = boston_dataset.copy()
+boston_pd.columns = [
+    'CRIM', 'ZN', 'INDUS', 'CHAS', 'NOX', 'RM', 'AGE',
+    'DIS', 'RAD', 'TAX', 'PTRATIO', 'B', 'LSTAT',
+    'House Price'
+]
+
+X = boston_pd.iloc[:, :-1]
+Y = boston_pd.iloc[:, -1]
+
+print(boston_pd.head())
+
+# -----------------------------
+# Train-Test Split
+# -----------------------------
+x_train, x_test, y_train, y_test = train_test_split(
+    X, Y, test_size=0.25, random_state=42
+)
+
+print(f"Train data shape X: {x_train.shape}, Y: {y_train.shape}")
+print(f"Test  data shape X: {x_test.shape},  Y: {y_test.shape}")
+
+# -----------------------------
+# Linear Regression
+# -----------------------------
+lreg = LinearRegression()
+lreg.fit(x_train, y_train)
+
+lreg_y_pred = lreg.predict(x_test)
+mse_lr = np.mean((lreg_y_pred - y_test) ** 2)
+
+print("Linear Regression - Mean Squared Error:", mse_lr)
+
+lreg_coefficient = pd.DataFrame()
+lreg_coefficient["Columns"] = x_train.columns
+lreg_coefficient["Coefficient Estimate"] = lreg.coef_
+
+print(lreg_coefficient)
+
+# Coefficient Plot
+fig, ax = plt.subplots(figsize=(20, 10))
+ax.bar(
+    lreg_coefficient["Columns"],
+    lreg_coefficient["Coefficient Estimate"]
+)
+ax.spines['bottom'].set_position('zero')
+plt.show()
+
+# -----------------------------
+# Ridge Regression
+# -----------------------------
+ridgeR = Ridge(alpha=1)
+ridgeR.fit(x_train, y_train)
+
+y_pred_ridge = ridgeR.predict(x_test)
+mse_ridge = np.mean((y_pred_ridge - y_test) ** 2)
+
+print("Ridge Regression - Mean Squared Error:", mse_ridge)
+
+ridge_coefficient = pd.DataFrame()
+ridge_coefficient["Columns"] = x_train.columns
+ridge_coefficient["Coefficient Estimate"] = ridgeR.coef_
+
+print(ridge_coefficient)
+
+# -----------------------------
+# Lasso Regression
+# -----------------------------
+lasso = Lasso(alpha=1)
+lasso.fit(x_train, y_train)
+
+y_pred_lasso = lasso.predict(x_test)
+mse_lasso = np.mean((y_pred_lasso - y_test) ** 2)
+
+print("Lasso Regression - Mean Squared Error:", mse_lasso)
+
+lasso_coeff = pd.DataFrame()
+lasso_coeff["Columns"] = x_train.columns
+lasso_coeff["Coefficient Estimate"] = lasso.coef_
+
+print(lasso_coeff)
+
+# -----------------------------
+# Elastic Net Regression
+# -----------------------------
+e_net = ElasticNet(alpha=1)
+e_net.fit(x_train, y_train)
+
+y_pred_elastic = e_net.predict(x_test)
+mse_elastic = np.mean((y_pred_elastic - y_test) ** 2)
+
+print("Elastic Net - Mean Squared Error:", mse_elastic)
+
+e_net_coeff = pd.DataFrame()
+e_net_coeff["Columns"] = x_train.columns
+e_net_coeff["Coefficient Estimate"] = e_net.coef_
+
+print(e_net_coeff)
+
+7.Implement and demonstrate k-nearest Neighbor algorithm. Read the training data
+from a .CSV file and build the model to classify a test sample. Print both correct
+and wrong predictions
+
+This code applies the K-Nearest Neighbors algorithm on the Iris dataset, evaluates model accuracy, and finds the optimal number 
+of neighbors by plotting training and testing accuracy.
+
+The program trains a KNN classifier on the Iris dataset and evaluates its accuracy. It also tests different values of k and 
+plots accuracy to select the best k for optimal performance.
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.datasets import load_iris
+
+# -----------------------------
+# Load Dataset
+# -----------------------------
+irisData = load_iris()
+X = irisData.data
+y = irisData.target
+
+# -----------------------------
+# Train-Test Split
+# -----------------------------
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# -----------------------------
+# Train KNN (k = 7)
+# -----------------------------
+knn = KNeighborsClassifier(n_neighbors=7)
+knn.fit(X_train, y_train)
+
+# Predictions
+y_pred = knn.predict(X_test)
+print("Predictions on test data:")
+print(y_pred)
+
+# Accuracy
+accuracy = knn.score(X_test, y_test)
+print("\nAccuracy for k = 7:", accuracy)
+
+# -----------------------------
+# Find Best K (Accuracy vs Neighbors)
+# -----------------------------
+neighbors = np.arange(1, 9)
+train_accuracy = np.empty(len(neighbors))
+test_accuracy = np.empty(len(neighbors))
+
+for i, k in enumerate(neighbors):
+    knn = KNeighborsClassifier(n_neighbors=k)
+    knn.fit(X_train, y_train)
+
+    train_accuracy[i] = knn.score(X_train, y_train)
+    test_accuracy[i] = knn.score(X_test, y_test)
+
+# -----------------------------
+# Plot Accuracy vs K
+# -----------------------------
+plt.plot(neighbors, test_accuracy, label='Testing Accuracy')
+plt.plot(neighbors, train_accuracy, label='Training Accuracy')
+
+plt.legend()
+plt.xlabel('Number of Neighbors (k)')
+plt.ylabel('Accuracy')
+plt.title('KNN Accuracy for Different k Values')
+plt.show()
+
+8. Build a decision tree classifier or regressor. Control hyperparameters like tree
+depth to avoid overfitting. Visualize the tree.
+
+This program tunes a Decision Tree Regressor using Grid Search, Random Search, and Bayesian Optimization on the California Housing dataset to compare different hyperparameter optimization techniques.
+The code applies three hyperparameter tuning methods to a Decision Tree model. It compares exhaustive search, random sampling, and Bayesian optimization to find the best parameters and improve regression performance.
+
+py -m pip install bayesian-optimization
+
+from sklearn.datasets import fetch_california_housing
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.model_selection import train_test_split, GridSearchCV, RandomizedSearchCV, cross_val_score
+from sklearn.metrics import mean_squared_error
+from scipy.stats import randint
+from bayes_opt import BayesianOptimization
+
+# -----------------------------
+# Load Dataset
+# -----------------------------
+data = fetch_california_housing()
+X, y = data.data, data.target
+
+# -----------------------------
+# Train-Test Split
+# -----------------------------
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# -----------------------------
+# 1. Grid Search
+# -----------------------------
+param_grid = {
+    'max_depth': [10, 20, 30, None],
+    'min_samples_split': [2, 5, 10],
+    'min_samples_leaf': [1, 2, 4]
+}
+
+dtree_reg = DecisionTreeRegressor(random_state=42)
+
+grid_search = GridSearchCV(
+    estimator=dtree_reg,
+    param_grid=param_grid,
+    cv=5,
+    n_jobs=-1,
+    verbose=2,
+    scoring='neg_mean_squared_error'
+)
+
+grid_search.fit(X_train, y_train)
+
+best_dtree_reg = grid_search.best_estimator_
+
+y_pred = best_dtree_reg.predict(X_test)
+mse = mean_squared_error(y_test, y_pred)
+rmse = mse ** 0.5
+
+best_params_grid = grid_search.best_params_
+
+print("Grid Search Best Parameters:", best_params_grid)
+print("Grid Search Test RMSE:", rmse)
+
+# -----------------------------
+# 2. Randomized Search
+# -----------------------------
+param_dist = {
+    'max_depth': randint(1, 20),
+    'min_samples_split': randint(2, 20),
+    'min_samples_leaf': randint(1, 20)
+}
+
+dtree_reg = DecisionTreeRegressor(random_state=42)
+
+random_search = RandomizedSearchCV(
+    estimator=dtree_reg,
+    param_distributions=param_dist,
+    n_iter=100,
+    cv=5,
+    random_state=42,
+    n_jobs=-1,
+    scoring='neg_mean_squared_error'
+)
+
+random_search.fit(X_train, y_train)
+
+best_params_random = random_search.best_params_
+best_score_random = random_search.best_score_
+
+print("Random Search Best Parameters:", best_params_random)
+print("Random Search Best CV Score:", best_score_random)
+
+# -----------------------------
+# 3. Bayesian Optimization
+# -----------------------------
+def dtree_cv(max_depth, min_samples_split, min_samples_leaf):
+    estimator = DecisionTreeRegressor(
+        max_depth=int(max_depth),
+        min_samples_split=int(min_samples_split),
+        min_samples_leaf=int(min_samples_leaf),
+        random_state=2
+    )
+
+    cval = cross_val_score(
+        estimator,
+        X_train,
+        y_train,
+        scoring='neg_mean_squared_error',
+        cv=5
+    )
+
+    return cval.mean()
+
+param_bounds = {
+    'max_depth': (1, 20),
+    'min_samples_split': (2, 20),
+    'min_samples_leaf': (1, 20)
+}
+
+optimizer = BayesianOptimization(
+    f=dtree_cv,
+    pbounds=param_bounds,
+    random_state=1
+)
+
+optimizer.maximize(init_points=5, n_iter=25)
+
+best_params_bayes = optimizer.max['params']
+
+best_params_bayes['max_depth'] = int(best_params_bayes['max_depth'])
+best_params_bayes['min_samples_split'] = int(best_params_bayes['min_samples_split'])
+best_params_bayes['min_samples_leaf'] = int(best_params_bayes['min_samples_leaf'])
+
+best_score_bayes = optimizer.max['target']
+
+print("Bayesian Optimization Best Parameters:", best_params_bayes)
+print("Bayesian Optimization Best CV Score:", best_score_bayes)
+
+9. Implement a Support Vector Machine for any relevant
+dataset 
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_breast_cancer
+from sklearn.svm import SVC
+
+# For newer sklearn (optional)
+try:
+    from sklearn.inspection import DecisionBoundaryDisplay
+    use_new_display = True
+except ImportError:
+    use_new_display = False
+
+# -----------------------------
+# Load Dataset
+# -----------------------------
+cancer = load_breast_cancer()
+X = cancer.data[:, :2]   # Use only first 2 features for visualization
+y = cancer.target
+
+# -----------------------------
+# Train SVM Classifier
+# -----------------------------
+svm = SVC(kernel="rbf", gamma=0.5, C=1.0)
+svm.fit(X, y)
+
+# -----------------------------
+# Plot Decision Boundary
+# -----------------------------
+plt.figure(figsize=(8, 6))
+
+if use_new_display:
+    DecisionBoundaryDisplay.from_estimator(
+        svm,
+        X,
+        response_method="predict",
+        cmap=plt.cm.Spectral,
+        alpha=0.8,
+        xlabel=cancer.feature_names[0],
+        ylabel=cancer.feature_names[1],
+    )
+else:
+    # Fallback for older sklearn
+    x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+    y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+    xx, yy = np.meshgrid(
+        np.linspace(x_min, x_max, 200),
+        np.linspace(y_min, y_max, 200),
+    )
+    Z = svm.predict(np.c_[xx.ravel(), yy.ravel()])
+    Z = Z.reshape(xx.shape)
+
+    plt.contourf(xx, yy, Z, cmap=plt.cm.Spectral, alpha=0.8)
+
+    plt.xlabel(cancer.feature_names[0])
+    plt.ylabel(cancer.feature_names[1])
+
+# Scatter plot of data points
+plt.scatter(X[:, 0], X[:, 1], c=y, s=20)
+
+plt.title("SVM Decision Boundary (RBF Kernel)")
+plt.show()
+
+9. Train a random forest ensemble. Experiment with the number of trees and
+feature sampling. Compare performance to a single decision tree.
+
+This program compares the performance of a Decision Tree and Random Forest classifier on the Iris dataset and 
+analyzes how accuracy changes with the number of trees.
+
+import numpy as np
+import pandas as pd
+from sklearn import datasets
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+import matplotlib.pyplot as plt
+
+# -----------------------------
+# Load Dataset
+# -----------------------------
+iris = datasets.load_iris()
+X = iris.data
+y = iris.target
+
+# -----------------------------
+# Train-Test Split
+# -----------------------------
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# -----------------------------
+# Decision Tree Classifier
+# -----------------------------
+decision_tree = DecisionTreeClassifier(random_state=42)
+decision_tree.fit(X_train, y_train)
+
+y_pred_tree = decision_tree.predict(X_test)
+
+print("Decision Tree Performance:")
+print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred_tree))
+print("\nClassification Report:\n", classification_report(y_test, y_pred_tree))
+dt_accuracy = accuracy_score(y_test, y_pred_tree)
+print("Accuracy Score:", dt_accuracy)
+
+# -----------------------------
+# Random Forest with Different Number of Trees
+# -----------------------------
+n_trees = [5, 10, 50, 100]
+accuracies = []
+
+for n in n_trees:
+    random_forest = RandomForestClassifier(
+        n_estimators=n,
+        random_state=42,
+        max_features='sqrt'
+    )
+
+    random_forest.fit(X_train, y_train)
+    y_pred_forest = random_forest.predict(X_test)
+
+    rf_accuracy = accuracy_score(y_test, y_pred_forest)
+    accuracies.append(rf_accuracy)
+
+    print(f"\nRandom Forest with {n} Trees Performance:")
+    print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred_forest))
+    print("\nClassification Report:\n", classification_report(y_test, y_pred_forest))
+    print("Accuracy Score:", rf_accuracy)
+
+# -----------------------------
+# Plot Accuracy Comparison
+# -----------------------------
+plt.figure(figsize=(10, 5))
+plt.plot(n_trees, accuracies, marker='o', linestyle='-')
+
+plt.title('Random Forest Accuracy vs. Number of Trees')
+plt.xlabel('Number of Trees')
+plt.ylabel('Accuracy')
+plt.xticks(n_trees)
+plt.grid()
+
+# Decision Tree baseline
+plt.axhline(
+    y=dt_accuracy,
+    linestyle='--',
+    label='Decision Tree Accuracy'
+)
+
+plt.legend()
+plt.show()
+
+10. Implement a gradient boosting machine (e.g., XGBoost). Tune
+hyperparameters and explore feature importance.
+
+This code trains an XGBoost binary classification model on a customer churn dataset, handles categorical features, 
+and evaluates the model using accuracy.
+The program builds an XGBoost classifier to predict customer churn. It preprocesses categorical variables, trains the model using gradient boosting, 
+and evaluates performance using accuracy on test data.
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+import xgboost as xgb
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+# -----------------------------
+# Load Dataset
+# -----------------------------
+dataset = pd.read_csv('Churn_Modelling.csv')
+
+# -----------------------------
+# Select Features and Target
+# -----------------------------
+X = dataset.iloc[:, 3:13].copy()   # Keep as DataFrame
+y = dataset.iloc[:, 13]
+
+# -----------------------------
+# Convert Categorical Columns
+# -----------------------------
+X['Geography'] = X['Geography'].astype('category')
+X['Gender'] = X['Gender'].astype('category')
+
+# -----------------------------
+# Train-Test Split
+# -----------------------------
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.25, random_state=0
+)
+
+# -----------------------------
+# Convert to DMatrix (Enable Categorical)
+# -----------------------------
+xgb_train = xgb.DMatrix(X_train, label=y_train, enable_categorical=True)
+xgb_test = xgb.DMatrix(X_test, label=y_test, enable_categorical=True)
+
+# -----------------------------
+# XGBoost Parameters
+# -----------------------------
+params = {
+    'objective': 'binary:logistic',
+    'max_depth': 3,
+    'learning_rate': 0.1,
+    'eval_metric': 'logloss'
+}
+
+num_boost_round = 50
+
+# -----------------------------
+# Train Model
+# -----------------------------
+model = xgb.train(
+    params=params,
+    dtrain=xgb_train,
+    num_boost_round=num_boost_round
+)
+
+# -----------------------------
+# Predictions
+# -----------------------------
+pred_probs = model.predict(xgb_test)
+
+# Convert probabilities to class labels (0/1)
+preds = (pred_probs > 0.5).astype(int)
+
+# -----------------------------
+# Evaluate Model
+# -----------------------------
+accuracy = accuracy_score(y_test, preds)
+print('Accuracy of the model is:', accuracy * 100)
+
+11. Implement and demonstrate the working of a Naive Bayesian classifier using
+a sample data set. Build the model to classify a test sample.
+This code trains a Gaussian Naive Bayes classifier on the Iris dataset and evaluates its accuracy on test data.
+The program applies Gaussian Naive Bayes on the Iris dataset by splitting data into training and testing sets, training the classifier, and calculating prediction accuracy.
+
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import accuracy_score
+
+# -----------------------------
+# Load Dataset
+# -----------------------------
+iris = load_iris()
+X = iris.data
+y = iris.target
+
+# -----------------------------
+# Train-Test Split
+# -----------------------------
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.4, random_state=1
+)
+
+# -----------------------------
+# Train Gaussian Naive Bayes
+# -----------------------------
+gnb = GaussianNB()
+gnb.fit(X_train, y_train)
+
+# -----------------------------
+# Predictions
+# -----------------------------
+y_pred = gnb.predict(X_test)
+
+# -----------------------------
+# Accuracy
+# -----------------------------
+accuracy = accuracy_score(y_test, y_pred) * 100
+print("Gaussian Naive Bayes model accuracy (in %):", accuracy)
+
+11.Implement Hidden Markov Models using hmmlearn
+This code uses a Hidden Markov Model to infer hidden weather states from observed conditions and applies the 
+Viterbi algorithm to find the most likely sequence of states.
+The program models weather as hidden states and ground condition as observations using an HMM. It decodes the most likely weather sequence 
+using the Viterbi algorithm and visualizes the results.
+
+This code performs Bayesian linear regression using PyMC to estimate posterior distributions of slope, intercept, and noise using MCMC sampling.
+The program models linear regression in a Bayesian framework by assigning probability distributions to model parameters and using MCMC sampling to infer their posterior distributions.
+
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from hmmlearn import hmm
+
+# -----------------------------
+# Define States and Observations
+# -----------------------------
+states = ["Sunny", "Rainy"]
+n_states = len(states)
+print('Number of hidden states:', n_states)
+
+observations = ["Dry", "Wet"]
+n_observations = len(observations)
+print('Number of observations:', n_observations)
+
+# -----------------------------
+# Initial State Probabilities
+# -----------------------------
+state_probability = np.array([0.6, 0.4])
+print("State probability:", state_probability)
+
+# -----------------------------
+# Transition Probabilities
+# -----------------------------
+transition_probability = np.array([
+    [0.7, 0.3],
+    [0.3, 0.7]
+])
+print("\nTransition probability:\n", transition_probability)
+
+# -----------------------------
+# Emission Probabilities
+# -----------------------------
+emission_probability = np.array([
+    [0.9, 0.1],
+    [0.2, 0.8]
+])
+print("\nEmission probability:\n", emission_probability)
+
+# -----------------------------
+# Build HMM Model
+# -----------------------------
+model = hmm.CategoricalHMM(n_components=n_states)
+model.startprob_ = state_probability
+model.transmat_ = transition_probability
+model.emissionprob_ = emission_probability
+
+# -----------------------------
+# Observation Sequence (0=Dry, 1=Wet)
+# -----------------------------
+observations_sequence = np.array([0, 1, 0, 1, 0, 0]).reshape(-1, 1)
+
+# -----------------------------
+# Predict Hidden States
+# -----------------------------
+hidden_states = model.predict(observations_sequence)
+print("Most likely hidden states (predict):", hidden_states)
+
+# -----------------------------
+# Decode Using Viterbi Algorithm
+# -----------------------------
+log_probability, hidden_states_viterbi = model.decode(
+    observations_sequence,
+    algorithm='viterbi'
+)
+
+print('Log Probability:', log_probability)
+print("Most likely hidden states (viterbi):", hidden_states_viterbi)
+
+# -----------------------------
+# Plot Hidden States
+# -----------------------------
+sns.set_style("whitegrid")
+
+plt.plot(hidden_states_viterbi, '-o', label="Hidden State")
+plt.xlabel('Time step')
+plt.ylabel('Most Likely Hidden State')
+plt.title("Sunny or Rainy (HMM Viterbi)")
+plt.legend()
+plt.show()
+
+12. Implement Bayesian Linear Regression to explore prior and posterior
+distribution. 
+
+
+import numpy as np
+import pymc as pm
+import matplotlib.pyplot as plt
+
+def run_bayesian_regression():
+    np.random.seed(0)
+
+    # -----------------------------
+    # Generate Data
+    # -----------------------------
+    X = np.linspace(0, 10, 100)
+    true_slope = 2
+    true_intercept = 1
+    Y = true_intercept + true_slope * X + np.random.normal(0, 1, size=100)
+
+    # -----------------------------
+    # PyMC Model
+    # -----------------------------
+    with pm.Model() as model:
+        slope = pm.Normal('slope', mu=0, sigma=10)
+        intercept = pm.Normal('intercept', mu=0, sigma=10)
+        sigma = pm.HalfNormal('sigma', sigma=1)
+
+        mu = intercept + slope * X
+
+        Y_obs = pm.Normal('Y_obs', mu=mu, sigma=sigma, observed=Y)
+
+        trace = pm.sample(
+            2000,
+            tune=1000,
+            cores=1,          # IMPORTANT for Windows
+            chains=1,         # IMPORTANT for Windows
+            return_inferencedata=True
+        )
+
+    pm.plot_posterior(trace, var_names=['slope', 'intercept', 'sigma'])
+    plt.show()
+
+# -----------------------------
+# Windows Multiprocessing Guard
+# -----------------------------
+if __name__ == "__main__":
+    run_bayesian_regression()
+
+
+13. Implement Gaussian Mixture Models for density estimation and unsupervised
+clustering 
+This code applies Gaussian Mixture Model clustering on the Iris dataset and visualizes the resulting clusters using the first two features.
+The program uses Gaussian Mixture Model to cluster the Iris dataset into three groups and visualizes the clusters. It also displays log-likelihood and number of EM iterations to show model convergence.
+Gaussian Mixture Model is a probabilistic clustering algorithm that assumes data is generated from a mixture of several Gaussian (normal) distributions.
+
+Each cluster is represented by a Gaussian distribution.
+
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn import datasets
+from sklearn.mixture import GaussianMixture
+
+# -----------------------------
+# Load Dataset
+# -----------------------------
+iris = datasets.load_iris()
+
+# Use only first two features for visualization
+X = iris.data[:, :2]
+
+# Convert to DataFrame
+df = pd.DataFrame(X, columns=['Feature1', 'Feature2'])
+
+# -----------------------------
+# Scatter Plot of Original Data
+# -----------------------------
+plt.figure(figsize=(6, 5))
+plt.scatter(df['Feature1'], df['Feature2'])
+plt.title("Original Data (First 2 Iris Features)")
+plt.xlabel("Feature 1")
+plt.ylabel("Feature 2")
+plt.show()
+
+# -----------------------------
+# Gaussian Mixture Model
+# -----------------------------
+gmm = GaussianMixture(n_components=3, random_state=42)
+gmm.fit(df)
+
+# Predict Cluster Labels
+labels = gmm.predict(df)
+df['Cluster'] = labels
+
+# -----------------------------
+# Plot Clusters
+# -----------------------------
+plt.figure(figsize=(6, 5))
+
+for cluster_id, color in zip([0, 1, 2], ['r', 'yellow', 'g']):
+    cluster_data = df[df['Cluster'] == cluster_id]
+    plt.scatter(
+        cluster_data['Feature1'],
+        cluster_data['Feature2'],
+        c=color,
+        label=f'Cluster {cluster_id}'
+    )
+
+plt.title("GMM Clustering (3 Components)")
+plt.xlabel("Feature 1")
+plt.ylabel("Feature 2")
+plt.legend()
+plt.show()
+
+# -----------------------------
+# Model Information
+# -----------------------------
+print("Lower Bound (Log-Likelihood):", gmm.lower_bound_)
+print("Number of EM Iterations:", gmm.n_iter_)
+
+14. Implement cross-validation techniques (k-fold, stratified, etc.) for robust
+model evaluation
+
+This code evaluates a Logistic Regression classifier using Stratified 10-fold cross-validation and reports accuracy statistics on the breast cancer dataset.
+The program uses Stratified K-Fold cross-validation to evaluate Logistic Regression while maintaining class balance in each fold. It reports average accuracy and variability across folds.
+
+from statistics import mean, stdev
+from sklearn import preprocessing
+from sklearn.model_selection import StratifiedKFold
+from sklearn import linear_model
+from sklearn import datasets
+
+# -----------------------------
+# Load Dataset
+# -----------------------------
+cancer = datasets.load_breast_cancer()
+X = cancer.data
+y = cancer.target
+
+# -----------------------------
+# Feature Scaling
+# -----------------------------
+scaler = preprocessing.MinMaxScaler()
+X_scaled = scaler.fit_transform(X)
+
+# -----------------------------
+# Logistic Regression Model
+# -----------------------------
+lr = linear_model.LogisticRegression(max_iter=1000)
+
+# -----------------------------
+# Stratified K-Fold Cross Validation
+# -----------------------------
+skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=1)
+
+lst_accu_stratified = []
+
+for train_index, test_index in skf.split(X_scaled, y):
+    X_train_fold = X_scaled[train_index]
+    X_test_fold = X_scaled[test_index]
+
+    y_train_fold = y[train_index]
+    y_test_fold = y[test_index]
+
+    lr.fit(X_train_fold, y_train_fold)
+    accuracy = lr.score(X_test_fold, y_test_fold)
+    lst_accu_stratified.append(accuracy)
+
+# -----------------------------
+# Results
+# -----------------------------
+print('List of possible accuracy:', lst_accu_stratified)
+
+print('\nMaximum Accuracy That can be obtained from this model is:',
+      max(lst_accu_stratified) * 100, '%')
+
+print('\nMinimum Accuracy:',
+      min(lst_accu_stratified) * 100, '%')
+
+print('\nOverall Accuracy:',
+      mean(lst_accu_stratified) * 100, '%')
+
+print('\nStandard Deviation is:',
+      stdev(lst_accu_stratified))
+
+
+from statistics import mean, stdev
+from sklearn import preprocessing
+from sklearn.model_selection import StratifiedKFold
+from sklearn import linear_model
+from sklearn import datasets
+
+# -----------------------------
+# Load Dataset
+# -----------------------------
+cancer = datasets.load_breast_cancer()
+X = cancer.data
+y = cancer.target
+
+# -----------------------------
+# Feature Scaling
+# -----------------------------
+scaler = preprocessing.MinMaxScaler()
+X_scaled = scaler.fit_transform(X)
+
+# -----------------------------
+# Logistic Regression Model
+# -----------------------------
+lr = linear_model.LogisticRegression(max_iter=1000)
+
+# -----------------------------
+# Stratified K-Fold Cross Validation
+# -----------------------------
+skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=1)
+
+lst_accu_stratified = []
+
+for train_index, test_index in skf.split(X_scaled, y):
+    X_train_fold = X_scaled[train_index]
+    X_test_fold = X_scaled[test_index]
+
+    y_train_fold = y[train_index]
+    y_test_fold = y[test_index]
+
+    lr.fit(X_train_fold, y_train_fold)
+    accuracy = lr.score(X_test_fold, y_test_fold)
+    lst_accu_stratified.append(accuracy)
+
+# -----------------------------
+# Results
+# -----------------------------
+print('List of possible accuracy:', lst_accu_stratified)
+
+print('\nMaximum Accuracy That can be obtained from this model is:',
+      max(lst_accu_stratified) * 100, '%')
+
+print('\nMinimum Accuracy:',
+      min(lst_accu_stratified) * 100, '%')
+
+print('\nOverall Accuracy:',
+      mean(lst_accu_stratified) * 100, '%')
+
+print('\nStandard Deviation is:',
+      stdev(lst_accu_stratified))
+
+
+15. Systematically explore combinations of hyperparameters to optimize model
+performance.(use grid and randomized search)
+This code uses GridSearchCV to tune Decision Tree hyperparameters on the Iris dataset and finds the best model configuration.
+The program performs hyperparameter tuning of a Decision Tree classifier using GridSearchCV with cross-validation to select the best values for model parameters.
+
+from sklearn.datasets import load_iris
+from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.tree import DecisionTreeClassifier
+
+# -----------------------------
+# Load Dataset
+# -----------------------------
+iris = load_iris()
+X = iris.data
+y = iris.target
+
+# -----------------------------
+# Train-Test Split
+# -----------------------------
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# -----------------------------
+# Parameter Grid
+# -----------------------------
+param_grid = {
+    'max_depth': [3, 5, 7],
+    'min_samples_split': [2, 5, 10]
+}
+
+# -----------------------------
+# Grid Search with Decision Tree
+# -----------------------------
+grid_search = GridSearchCV(
+    estimator=DecisionTreeClassifier(random_state=42),
+    param_grid=param_grid,
+    cv=5
+)
+
+grid_search.fit(X_train, y_train)
+
+# -----------------------------
+# Best Parameters
+# -----------------------------
+best_params = grid_search.best_params_
+print("Best Parameters:", best_params)
+15. mplement Bayesian Learning using inferences. 
+This code performs Bayesian estimation of the mean and standard deviation of a normal distribution using conjugate priors and visualizes the posterior distributions.
+The program applies Bayesian inference to update beliefs about the mean and variance of a normal distribution using observed data and plots the posterior distributions.
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# -----------------------------
+# Generate Data
+# -----------------------------
+np.random.seed(42)
+
+true_mu = 5
+true_sigma = 2
+
+data = np.random.normal(true_mu, true_sigma, size=100)
+
+# -----------------------------
+# Prior Parameters
+# -----------------------------
+prior_mu_mean = 0
+prior_mu_precision = 1   # Precision = 1 / variance
+
+prior_sigma_alpha = 2
+prior_sigma_beta = 2
+
+# -----------------------------
+# Posterior Parameters
+# -----------------------------
+posterior_mu_precision = prior_mu_precision + len(data) / (true_sigma ** 2)
+
+posterior_mu_mean = (
+    prior_mu_precision * prior_mu_mean + np.sum(data)
+) / posterior_mu_precision
+
+posterior_sigma_alpha = prior_sigma_alpha + len(data) / 2
+
+posterior_sigma_beta = prior_sigma_beta + np.sum(
+    (data - np.mean(data)) ** 2
+) / 2
+
+# -----------------------------
+# Sample from Posterior
+# -----------------------------
+posterior_mu = np.random.normal(
+    posterior_mu_mean,
+    1 / np.sqrt(posterior_mu_precision),
+    size=10000
+)
+
+posterior_sigma = np.random.gamma(
+    posterior_sigma_alpha,
+    1 / posterior_sigma_beta,
+    size=10000
+)
+
+# -----------------------------
+# Plot Posterior Distributions
+# -----------------------------
+plt.figure(figsize=(10, 4))
+
+plt.subplot(1, 2, 1)
+plt.hist(posterior_mu, bins=30, density=True,
+         color='skyblue', edgecolor='black')
+plt.title('Posterior Distribution of μ')
+plt.xlabel('μ')
+plt.ylabel('Density')
+
+plt.subplot(1, 2, 2)
+plt.hist(posterior_sigma, bins=30, density=True,
+         color='lightgreen', edgecolor='black')
+plt.title('Posterior Distribution of σ')
+plt.xlabel('σ')
+plt.ylabel('Density')
+
+plt.tight_layout()
+plt.show()
+
+# -----------------------------
+# Posterior Statistics
+# -----------------------------
+mean_mu = np.mean(posterior_mu)
+std_mu = np.std(posterior_mu)
+
+print("Mean of mu:", mean_mu)
+print("Standard deviation of mu:", std_mu)
+
+mean_sigma = np.mean(posterior_sigma)
+std_sigma = np.std(posterior_sigma)
+
+print("Mean of sigma:", mean_sigma)
+print("Standard deviation of sigma:", std_sigma)
+
+16. Set up a generator network to produce samples and a discriminator network to
+distinguish between real and generated data. (Use a simple small dataset)
+
+This code implements a CNN-based Generative Adversarial Network (GAN) to generate handwritten digits from the MNIST dataset using adversarial training.
+The program trains a Generator to create fake handwritten digits and a Discriminator to classify real and fake images. Both networks improve through adversarial learning on the MNIST dataset.
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torchvision
+from torchvision import datasets, transforms
+import matplotlib.pyplot as plt
+import numpy as np
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+# -----------------------------
+# Data
+# -----------------------------
+transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.5,), (0.5,))
+])
+
+dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
+
+subset_size = 10000
+dataset = torch.utils.data.Subset(dataset, list(range(subset_size)))
+
+dataloader = torch.utils.data.DataLoader(dataset, batch_size=64, shuffle=True)
+
+latent_dim = 100
+lr = 0.0002
+num_epochs = 15
+
+# -----------------------------
+# Generator (CNN)
+# -----------------------------
+class Generator(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(latent_dim, 128*7*7),
+            nn.BatchNorm1d(128*7*7),
+            nn.ReLU(),
+
+            nn.Unflatten(1, (128, 7, 7)),
+
+            nn.ConvTranspose2d(128, 64, 4, 2, 1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+
+            nn.ConvTranspose2d(64, 1, 4, 2, 1),
+            nn.Tanh()
+        )
+
+    def forward(self, z):
+        return self.net(z)
+
+# -----------------------------
+# Discriminator (CNN)
+# -----------------------------
+class Discriminator(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Conv2d(1, 64, 4, 2, 1),
+            nn.LeakyReLU(0.2),
+
+            nn.Conv2d(64, 128, 4, 2, 1),
+            nn.BatchNorm2d(128),
+            nn.LeakyReLU(0.2),
+
+            nn.Flatten(),
+            nn.Linear(128*7*7, 1),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        return self.net(x)
+
+G = Generator().to(device)
+D = Discriminator().to(device)
+
+loss_fn = nn.BCELoss()
+opt_G = optim.Adam(G.parameters(), lr=lr, betas=(0.5, 0.999))
+opt_D = optim.Adam(D.parameters(), lr=lr, betas=(0.5, 0.999))
+
+# -----------------------------
+# Training
+# -----------------------------
+for epoch in range(num_epochs):
+    for i, (real, _) in enumerate(dataloader):
+        real = real.to(device)
+        b = real.size(0)
+
+        valid = torch.ones(b, 1, device=device)
+        fake = torch.zeros(b, 1, device=device)
+
+        # ---- Train Discriminator ----
+        opt_D.zero_grad()
+        z = torch.randn(b, latent_dim, device=device)
+        fake_imgs = G(z)
+
+        d_real = loss_fn(D(real), valid)
+        d_fake = loss_fn(D(fake_imgs.detach()), fake)
+        d_loss = (d_real + d_fake) / 2
+
+        d_loss.backward()
+        opt_D.step()
+
+        # ---- Train Generator ----
+        opt_G.zero_grad()
+        g_loss = loss_fn(D(fake_imgs), valid)
+        g_loss.backward()
+        opt_G.step()
+
+    # ---- Show Progress ----
+    with torch.no_grad():
+        z = torch.randn(16, latent_dim, device=device)
+        samples = G(z).cpu()
+        grid = torchvision.utils.make_grid(samples, nrow=4, normalize=True)
+
+        plt.figure(figsize=(5,5))
+        plt.imshow(np.transpose(grid, (1,2,0)), cmap='gray')
+        plt.title(f"Epoch {epoch+1}")
+        plt.axis("off")
+        plt.show()
+
+17.Develop an APIto deploy your model and perform predictions:
+
+This code creates a FastAPI web service that serves a trained Naive Bayes model to predict Iris flower species through a REST API.
+The program builds a REST API using FastAPI that trains a Naive Bayes classifier on the Iris dataset and provides an endpoint to make predictions using HTTP requests.
+
+http://127.0.0.1:8000
+http://127.0.0.1:8000/docs
+from fastapi import FastAPI
+from pydantic import BaseModel
+from sklearn.datasets import load_iris
+from sklearn.naive_bayes import GaussianNB
+import uvicorn
+
+# -----------------------------
+# Create FastAPI App
+# -----------------------------
+app = FastAPI()
+
+# -----------------------------
+# Simple GET Endpoints
+# -----------------------------
+@app.get("/")
+def main():
+    return {"message": "Welcome Everyone!"}
+
+@app.get("/{name}")
+def hello_name(name: str):
+    return {"message": f"Welcome Everyone!, {name}"}
+
+# -----------------------------
+# Load ML Model
+# -----------------------------
+iris = load_iris()
+X = iris.data
+Y = iris.target
+
+clf = GaussianNB()
+clf.fit(X, Y)
+
+# -----------------------------
+# Request Body Model
+# -----------------------------
+class RequestBody(BaseModel):
+    sepal_length: float
+    sepal_width: float
+    petal_length: float
+    petal_width: float
+
+# -----------------------------
+# Prediction Endpoint
+# -----------------------------
+@app.post("/predict")
+def predict(data: RequestBody):
+    test_data = [[
+        data.sepal_length,
+        data.sepal_width,
+        data.petal_length,
+        data.petal_width
+    ]]
+
+    class_idx = clf.predict(test_data)[0]
+
+    return {
+        "class": iris.target_names[class_idx]
+    }
+
+# -----------------------------
+# Run Server (Optional)
+# -----------------------------
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)
