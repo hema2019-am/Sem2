@@ -1,5 +1,13 @@
-Employee attrition is a major challenge for organizations, resulting in increased recruitment costs, loss of skilled employees, and reduced productivity. Predicting employee attrition in advance enables organizations to take proactive measures to improve employee retention and workforce planning. With the availability of large volumes of employee-related data, machine learning techniques can be effectively applied to analyze patterns and predict employee behavior.
+Employee attrition is a major challenge for organizations, resulting in increased recruitment costs, loss of skilled employees, and reduced productivity. 
+Predicting employee attrition in advance enables organizations to take proactive measures to improve employee retention and workforce planning. 
+With the availability of large volumes of employee-related data, machine learning techniques can be effectively applied to analyze patterns and predict employee behavior.
 
-This project presents the development of an Employee Attrition Prediction System using machine learning techniques. The system analyzes historical human resource data to predict whether an employee is likely to leave the organization. Employee attributes such as age, job role, income level, job satisfaction, years of experience, and overtime status are used as input features. A Logistic Regression model, a supervised learning algorithm suitable for binary classification, is employed to generate accurate predictions.
+This project presents the development of an Employee Attrition Prediction System using machine learning techniques. 
+The system analyzes historical human resource data to predict whether an employee is likely to leave the organization. 
+Employee attributes such as age, job role, income level, job satisfaction, years of experience, and overtime status are used as input features. 
+A Logistic Regression model, a supervised learning algorithm suitable for binary classification, is employed to generate accurate predictions.
 
-The trained machine learning model is deployed as a web-based application using the Flask framework, allowing users to input employee details through a simple interface and receive real-time attrition prediction results. The model is trained using the IBM HR Analytics Employee Attrition dataset sourced from Kaggle and evaluated using a train-test split approach. Technologies used in this project include Python, Scikit-learn, Pandas, NumPy, Flask, HTML, and CSS. The system functions as a decision-support tool for HR professionals, demonstrating the practical application of machine learning techniques in human resource analytics.
+The trained machine learning model is deployed as a web-based application using the Flask framework, allowing users to input employee details through a simple 
+interface and receive real-time attrition prediction results. The model is trained using the IBM HR Analytics Employee Attrition dataset sourced from Kaggle 
+and evaluated using a train-test split approach. Technologies used in this project include Python, Scikit-learn, Pandas, NumPy, Flask, HTML, and CSS. 
+The system functions as a decision-support tool for HR professionals, demonstrating the practical application of machine learning techniques in human resource analytics.
