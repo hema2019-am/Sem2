@@ -1,0 +1,441 @@
+Go To the folder path,
+run : py 1.py
+dependcieis install: py -m pip install tensorflow
+py -m pip install --upgrade pip
+
+1A. Develop a secure messaging application where users can exchange
+messages securely using RSA encryption. Implement a mechanism
+for generating RSA key pairs and encrypting/decrypting messages.
+
+RSA is an asymmetric encryption algorithm.
+Each user has a public key and a private key.
+The sender encrypts the message using the receiver's public key.
+Only the receiver can decrypt the message using their private key.
+This ensures secure communication over an insecure network.
+
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_OAEP
+
+# User class
+class User:
+    def __init__(self, name):
+        self.name = name
+        self.key = RSA.generate(2048)
+        self.private_key = self.key
+        self.public_key = self.key.publickey()
+
+    def encrypt_message(self, message, receiver_public_key):
+        cipher = PKCS1_OAEP.new(receiver_public_key)
+        return cipher.encrypt(message.encode())
+
+    def decrypt_message(self, encrypted_message):
+        cipher = PKCS1_OAEP.new(self.private_key)
+        return cipher.decrypt(encrypted_message).decode()
+
+# Create two users
+user1 = User("Alice")
+user2 = User("Bob")
+
+# Alice sends a message to Bob
+message = "Hello Bob! This is a secure message."
+print("Original Message:", message)
+
+encrypted_msg = user1.encrypt_message(message, user2.public_key)
+print("\nEncrypted Message:")
+print(encrypted_msg)
+
+# Bob decrypts the message
+decrypted_msg = user2.decrypt_message(encrypted_msg)
+print("\nDecrypted Message:")
+print(decrypted_msg)
+
+1B. Allow users to create multiple transactions and display them in an organised format.
+pip install pycryptodome
+
+
+import binascii
+import datetime
+import collections
+from Crypto.PublicKey import RSA
+from Crypto import Random
+from Crypto.Hash import SHA
+from Crypto.Signature import PKCS1_v1_5
+
+class Client:
+    def __init__(self):
+        random_gen = Random.new().read
+        self._private_key = RSA.generate(1024, random_gen)
+        self._public_key = self._private_key.publickey()
+
+    @property
+    def identity(self):
+        return binascii.hexlify(
+            self._public_key.exportKey(format='DER')
+        ).decode('ascii')
+
+class Transaction:
+    def __init__(self, sender, recipient, value):
+        self.sender = sender
+        self.recipient = recipient
+        self.value = value
+        self.time = datetime.datetime.now()
+
+    def to_dict(self):
+        return collections.OrderedDict({
+            'sender': self.sender.identity,
+            'recipient': self.recipient,
+            'value': self.value,
+            'time': self.time
+        })
+
+    def sign_transaction(self):
+        signer = PKCS1_v1_5.new(self.sender._private_key)
+        h = SHA.new(str(self.to_dict()).encode('utf8'))
+        return binascii.hexlify(signer.sign(h)).decode('ascii')
+
+def display_transactions(transactions):
+    print("\n========== TRANSACTION LIST ==========\n")
+
+    for i, transaction in enumerate(transactions, start=1):
+        data = transaction.to_dict()
+
+        print(f"Transaction #{i}")
+        print("Sender    :", data['sender'][:30] + "...")
+        print("Recipient :", data['recipient'][:30] + "...")
+        print("Amount    :", data['value'])
+        print("Time      :", data['time'])
+        print("-" * 50)
+
+# Create Clients
+A = Client()
+B = Client()
+C = Client()
+
+# Create Multiple Transactions
+transactions = []
+
+transactions.append(Transaction(A, B.identity, 100))
+transactions.append(Transaction(B, C.identity, 50))
+transactions.append(Transaction(C, A.identity, 25))
+transactions.append(Transaction(A, C.identity, 75))
+
+# Display All Transactions
+display_transactions(transactions)
+
+1C. Create a Python class named Transaction with attributes for sender, receiver, and amount. Implement a method within 
+the class to transfer money from the sender's account to the receiver's account
+class Account:
+    def __init__(self, name, balance):
+        self.name = name
+        self.balance = balance
+
+class Transaction:
+    def __init__(self, sender, receiver, amount):
+        self.sender = sender
+        self.receiver = receiver
+        self.amount = amount
+
+    def transfer(self):
+        if self.sender.balance >= self.amount:
+            self.sender.balance -= self.amount
+            self.receiver.balance += self.amount
+
+            print("Transaction Successful!")
+            print(f"{self.amount} transferred from {self.sender.name} to {self.receiver.name}")
+        else:
+            print("Insufficient Balance!")
+
+# Create Accounts
+acc1 = Account("Alice", 1000)
+acc2 = Account("Bob", 500)
+
+# Create Transaction
+t1 = Transaction(acc1, acc2, 300)
+
+# Transfer Money
+t1.transfer()
+
+# Display Updated Balances
+print("\nAccount Balances:")
+print(f"{acc1.name}: ₹{acc1.balance}")
+print(f"{acc2.name}: ₹{acc2.balance}")
+
+2A. Write a python program to demonstrate mining.
+Mining is the process of finding a nonce value such 
+that the generated hash satisfies a specific condition (difficulty level).
+Steps:
+Take a message/block data.
+Generate a hash using SHA-256.
+Change the nonce repeatedly.
+Check if the hash starts with the required prefix.
+If the condition is satisfied, the block is considered mined.
+
+import hashlib
+def sha256(message):
+    return hashlib.sha256(message.encode('ascii')).hexdigest()
+
+def mine(message, difficulty=2):
+    prefix = '1' * difficulty
+    print("Prefix:", prefix)
+
+    for i in range(100):   # Only 100 iterations
+        digest = sha256(str(hash(message)) + str(i))
+        print("Testing =>", digest)
+
+        if digest.startswith(prefix):
+            print("\nNonce Found:", i)
+            print("Hash:", digest)
+            return i
+
+    print("\nNo valid nonce found within 100 iterations.")
+    return None
+
+n = mine("test message", 2)
+print("Nonce Value:", n)
+
+2B. Demonstrate the use of the Bitcoin Core API to interact with a Bitcoin Core node.
+pip install --upgrade pip setuptools wheel
+pip install greenlet==3.0.3
+pip install bitcoinlib
+
+from bitcoinlib.wallets import Wallet
+w = Wallet.create('Wallet3')
+key1 = w.get_key()
+
+print("Wallet Address:", key1.address)
+w.scan()
+w.info()
+
+3A.Write a Solidity program that demonstrates various types of functions
+including regular functions, view functions, pure functions, and the fallback function.
+
+Steps:
+1. write the code in remix online code, with file name program.sol
+2. Click on Solidity compiler and the click on compile and Test button
+3. Click on Deploy and click on Deploy button
+4. under Deploy Contracts , click on Functions and on drop down 
+5. First select viewX1 , then localX1 , then viewX1
+
+//type of functions
+pragma solidity ^0.8.0;
+contract SolidityTest {
+uint x1=10;
+//local function
+function localX1() public returns(uint){
+x1=20;
+return x1;
+}
+//view function
+function viewX1() public view returns(uint){
+return x1;
+}
+function pureX1() public pure returns(uint){
+//return x1; //error
+return 0;
+}
+}
+
+3B. Write a Solidity program that demonstrates function overloading, mathematical
+functions, and cryptographic functions.
+
+
+Steps:
+1. write the code in remix online code, with file name program.sol
+2. Click on Solidity compiler and the click on compile and Test button
+3. Click on Deploy and click on Deploy button
+4. under Deploy Contracts , click on Functions and on drop down 
+5. First select function overloading, mathematical functions, 
+and cryptographic functions
+
+Viva Explanation
+Function Overloading
+Multiple functions with the same name but different parameters.
+Example: add(uint,uint) and add(uint,uint,uint).
+Mathematical Functions
+Perform arithmetic operations such as maximum and square calculations.
+Cryptographic Functions
+keccak256() – Ethereum's primary hashing algorithm.
+sha256() – Secure Hash Algorithm 256-bit.
+ripemd160() – Produces a 160-bit cryptographic hash.
+
+pragma solidity ^0.8.0;
+contract FunctionDemo {
+
+    // Function Overloading
+    function add(uint a, uint b) public pure returns(uint) {
+        return a + b;
+    }
+
+    function add(uint a, uint b, uint c) public pure returns(uint) {
+        return a + b + c;
+    }
+
+    // Mathematical Functions
+    function getMax(uint a, uint b) public pure returns(uint) {
+        if(a > b)
+            return a;
+        else
+            return b;
+    }
+
+    function getSquare(uint x) public pure returns(uint) {
+        return x * x;
+    }
+
+    // Cryptographic Functions
+    function getKeccakHash(string memory text)
+        public
+ch        pure
+        returns(bytes32)
+    {
+        return keccak256(abi.encodePacked(text));
+    }
+
+    function getSha256Hash(string memory text)
+        public
+        pure
+        returns(bytes32)
+    {
+        return sha256(abi.encodePacked(text));
+    }
+
+    function getRipemd160Hash(string memory text)
+        public
+        pure
+        returns(bytes20)
+    {
+        return ripemd160(abi.encodePacked(text));
+    }
+}
+
+3C. Write a Solidity program that demonstrates various features including contracts
+inheritance, constructors, abstract contracts, interfaces.
+
+The Solidity program was successfully compiled and deployed. The program demonstrated:
+Constructor execution during contract deployment.
+Inheritance of properties and functions from a parent contract.
+Use of an abstract contract with an overridden function.
+Implementation of an interface in the child contract.
+
+For this to run, while deploying select Student under deploy section
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+// Interface
+interface IDisplay {
+    function display() external pure returns (string memory);
+}
+
+// Abstract Contract
+abstract contract Person {
+    string public name;
+
+    constructor(string memory _name) {
+        name = _name;
+    }
+
+    function getRole() public view virtual returns (string memory);
+}
+
+// Child Contract
+contract Student is Person, IDisplay {
+
+    uint public rollNo;
+
+    constructor(string memory _name, uint _rollNo)
+        Person(_name)
+    {
+        rollNo = _rollNo;
+    }
+
+    function getRole()
+        public
+        pure
+        override
+        returns (string memory)
+    {
+        return "Student";
+    }
+
+    function display()
+        external
+        pure
+        override
+        returns (string memory)
+    {
+        return "Inheritance, Constructor, Abstract Contract and Interface Demo";
+    }
+}
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+// Interface
+interface IDisplay {
+    function display() external pure returns (string memory);
+}
+
+// Abstract Contract
+abstract contract Person {
+    string public name;
+
+    constructor(string memory _name) {
+        name = _name;
+    }
+
+    function getRole() public view virtual returns (string memory);
+}
+
+// Child Contract
+contract Student is Person, IDisplay {
+
+    uint public rollNo;
+
+    constructor(string memory _name, uint _rollNo)
+        Person(_name)
+    {
+        rollNo = _rollNo;
+    }
+
+    function getRole()
+        public
+        pure
+        override
+        returns (string memory)
+    {
+        return "Student";
+    }
+
+    function display()
+        external
+        pure
+        override
+        returns (string memory)
+    {
+        return "Inheritance, Constructor, Abstract Contract and Interface Demo";
+    }
+}
+
+
+4B. Write a Solidity program that Transfer ethers from one account to another on an
+Ethereum testnet.
+Steps to run
+1. After deploying, copy from differnt account address , and some ether 
+2. Call , the amount to check the ether
+
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.11;
+contract Sender {
+ uint public amount;
+ address payable owner;
+ constructor (){
+ owner = payable(msg.sender); // set the deployer of contract as the owner
+ }
+ function sendEth(address payable receiver) payable public{
+ require(owner == msg.sender, "Only the owner can send funds");
+ amount = msg.value;
+ receiver.transfer(amount);
+}
+}
