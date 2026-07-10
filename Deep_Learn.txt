@@ -90,117 +90,139 @@ print("\nPredictions:")
 print(model.predict(X))
 
 3. Aim: Implementing deep neural network for performing classification task.
-Problem statement: the given dataset comprises of health information about diabetic women
-patient. we need to create deep feed forward network that will classify women suffering from
-diabetes mellitus as 1.
+This program uses a Feed Forward Deep Neural Network to classify breast cancer cases as malignant (0) or benign (1). The built-in Breast Cancer dataset is divided into training and testing data, and StandardScaler is used to normalize the feature values.
 
-import numpy as np
+The neural network contains two hidden layers with 12 and 8 neurons using the ReLU activation function, while the output layer uses Sigmoid activation for binary classification. The model is trained using the Adam optimizer and Binary Cross-Entropy loss function.
+
+For testing, the program displays 3 samples containing 2 correct predictions and 1 incorrect prediction. Only 5 feature values are displayed for each sample to keep the output simple, although the model uses all 30 features for making predictions.
+
+Term	Explanation
+Feed Forward Neural Network	A neural network where data moves in one direction from input layer to hidden layers and then to output layer.
+Binary Classification	A classification task with only two possible classes, here malignant (0) and benign (1).
+Malignant (0)	Indicates a cancerous tumor.
+Benign (1)	Indicates a non-cancerous tumor.
+StandardScaler	Standardizes feature values so they have approximately mean 0 and standard deviation 1.
+ReLU	An activation function that outputs 0 for negative values and keeps positive values.
+Sigmoid	Converts the output into a value between 0 and 1, useful for binary classification.
+Binary Cross-Entropy	A loss function that measures the difference between actual and predicted binary classes.
+Adam Optimizer	An optimization algorithm that updates model weights to reduce prediction error.
+
+Result: The model successfully classifies breast cancer samples and demonstrates both correct and incorrect predictions on test data.
+
 from keras.models import Sequential
 from keras.layers import Dense, Input
-from sklearn.model_selection import train_test_split
 from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+import numpy as np
 
-# Load Built-in Dataset
-dataset = load_breast_cancer()
-
-# Input and Output
-X = dataset.data
-Y = dataset.target
+# Load Dataset
+data = load_breast_cancer()
+X, Y = data.data, data.target
 
 # Split Dataset
 X_train, X_test, Y_train, Y_test = train_test_split(
-    X, Y,
-    test_size=0.2,
-    random_state=0
+    X, Y, test_size=0.2, random_state=0
 )
 
-# Scale Input Data
+# Scale Data
 scaler = StandardScaler()
-
-X_train_scaled = scaler.fit_transform(X_train)
+X_train = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
-# Create Deep Neural Network
-model = Sequential()
+# Create Model
+model = Sequential([
+    Input(shape=(X.shape[1],)),
+    Dense(12, activation='relu'),
+    Dense(8, activation='relu'),
+    Dense(1, activation='sigmoid')
+])
 
-# Input Layer
-model.add(Input(shape=(X_train.shape[1],)))
-
-# Hidden Layers
-model.add(Dense(12, activation='relu'))
-model.add(Dense(8, activation='relu'))
-
-# Output Layer
-model.add(Dense(1, activation='sigmoid'))
-
-# Compile Model
+# Compile and Train
 model.compile(
     loss='binary_crossentropy',
     optimizer='adam',
     metrics=['accuracy']
 )
 
-# Train Model
 model.fit(
-    X_train_scaled,
-    Y_train,
+    X_train, Y_train,
     epochs=100,
-    batch_size=10
+    batch_size=10,
+    verbose=0
 )
 
 # Evaluate Model
 loss, accuracy = model.evaluate(
-    X_test_scaled,
-    Y_test
+    X_test_scaled, Y_test,
+    verbose=0
 )
 
-print("\nAccuracy: %.2f%%" % (accuracy * 100))
+print("Accuracy: %.2f%%" % (accuracy * 100))
 
-# Make Predictions
-predictions = model.predict(X_test_scaled)
+# Predictions
+prob = model.predict(X_test_scaled, verbose=0)
+pred = (prob.flatten() >= 0.5).astype(int)
 
-# Display 5 Test Samples
-print("\n--- Test Results with Feature Names ---")
+# Find Correct and Incorrect Samples
+correct = np.where(pred == Y_test)[0]
+incorrect = np.where(pred != Y_test)[0]
 
-for i in range(5):
+# Select 2 Correct + 1 Incorrect
+samples = [correct[0], correct[1], incorrect[0]]
 
-    predicted_class = int(predictions[i][0] >= 0.5)
+# Show 3 Test Samples
+print("\n--- Test Samples ---")
 
-    print("\n==============================")
-    print("Test Sample", i + 1)
-    print("==============================")
+for i in samples:
 
-    # Print Feature Names and Values
-    for feature_name, value in zip(
-        dataset.feature_names,
-        X_test[i]
+    print("\nTest Data:")
+
+    # Show Only 5 Features
+    for name, value in zip(
+        data.feature_names[:5],
+        X_test[i][:5]
     ):
-        print(
-            f"{feature_name:30s} : {value:.4f}"
-        )
+        print(f"{name}: {value:.4f}")
 
-    print("------------------------------")
-
-    # Predicted Result
-    print(
-        "Prediction :",
-        predicted_class,
-        "-",
-        dataset.target_names[predicted_class]
+    result = (
+        "Correct"
+        if pred[i] == Y_test[i]
+        else "Incorrect"
     )
 
-    # Actual Result
-    print(
-        "Actual     :",
-        Y_test[i],
-        "-",
-        dataset.target_names[Y_test[i]]
-    )
+    print("Prediction:", pred[i],
+          "-", data.target_names[pred[i]])
+
+    print("Actual:", Y_test[i],
+          "-", data.target_names[Y_test[i]])
+
+    print("Result:", result)
+
 
 
 4A.  Aim: Using deep feed forward network with two hidden layers for
 performing classification and predicting the class.
+
+Explanation
+
+This program implements a Deep Feed Forward Neural Network (DFFN) for binary classification. The make_blobs() function generates 100 sample data points with 2 input features and 2 classes. The data is normalized using MinMaxScaler.
+
+The neural network contains two hidden layers, each with 4 neurons using the ReLU activation function. The output layer uses the Sigmoid activation function to predict class 0 or 1. The model is trained for 100 epochs and then tested on 3 new samples.
+
+Important Terms
+Term	Explanation
+Deep Feed Forward Network (DFFN)	A neural network where data moves only in one direction: input → hidden layers → output.
+Binary Classification	A task of predicting one of two classes, such as 0 or 1..
+MinMaxScaler	       Normalizes input values, usually between 0 and 1.
+Dense Layer	           A fully connected neural network layer where every neuron connects to the next layer.
+Hidden Layer	       An intermediate layer that learns patterns from input data.
+ReLU	              Activation function that outputs 0 for negative values and keeps positive values.
+Sigmoid          	Converts output into a value between 0 and 1.
+Binary Cross-Entropy	Loss function used to measure error in binary classification.
+Adam Optimizer	Algorithm that updates network weights to reduce prediction error
+
+
 from keras.models import Sequential
 from keras.layers import Dense
 from sklearn.datasets import make_blobs
@@ -263,6 +285,24 @@ for i in range(len(Xnew)):
 
 4B. Aim: Using a deep field forward network with two hidden layers for
 performing classification and predicting the probability of class.
+This program uses a Deep Feed Forward Neural Network (DFFN) for binary classification of data into class 0 or 1.
+The model has two hidden layers with ReLU and an output layer with Sigmoid to predict probabilities.
+It tests 3 new samples and converts each predicted probability into a class using a 0.5 threshold.
+
+Term	Explanation
+Deep Feed Forward Neural Network (DFFN)	A neural network where information moves in one direction from input layer to hidden layers and then to output layer.
+Binary Classification	A task where the model predicts one of two classes, such as 0 or 1.
+MinMaxScaler	Normalizes feature values to a common range, usually between 0 and 1.
+Sequential Model	A neural network model where layers are added one after another in sequence.
+Dense Layer	A fully connected layer where each neuron is connected to neurons in the next layer.
+ReLU	An activation function that returns 0 for negative inputs and keeps positive values.
+Sigmoid	Converts the model output into a probability value between 0 and 1.
+Binary Cross-Entropy	A loss function used to measure prediction error in binary classification.
+Adam Optimizer	An optimization algorithm that updates model weights to reduce prediction error.
+Predicted Probability	The probability produced by the Sigmoid output layer, such as 0.82 or 0.15.
+Threshold	A cutoff value used to convert probability into a class. Here, the threshold is 0.5.
+Predicted Class	The final class predicted by the model: 0 or 1.
+
 from keras.models import Sequential
 from keras.layers import Dense
 from sklearn.datasets import make_blobs
@@ -322,31 +362,19 @@ for i in range(len(Xnew)):
 4C. Using a deep field forward network with two hidden layers for
 performing linear regression and predicting values.
 
-Sigmoid outputs values between 0 and 1.
-Linear outputs any continuous value, which is suitable for regression.
-Small Explanation
-make_regression()
-Generates sample data for a regression problem.
-MinMaxScaler
-Scales input and output values between 0 and 1.
-Deep Feed Forward Network
-Two hidden layers with 4 neurons each.
-ReLU activation in hidden layers.
-Linear activation in output layer.
-Training
-The network learns the relationship between inputs and outputs.
-Prediction
-The model predicts continuous numerical values for new inputs.
-Viva Answer
-
-What is Linear Regression?
-Linear Regression predicts continuous numerical values based on input features.
-
-Why use MSE Loss?
-Mean Squared Error measures the difference between actual and predicted values.
-
-Why use Linear Activation in Output Layer?
-Regression requires continuous output values, so a linear activation function is preferred.
+This program uses a Deep Feed Forward Neural Network (DFFN) to perform regression and predict continuous numerical values.
+The model has two hidden layers with ReLU activation and an output layer with Linear activation for continuous value prediction.
+The data is normalized using MinMaxScaler, and the trained model predicts values for 3 new test samples.
+Term	Explanation
+Regression	    Predicts continuous numerical values.
+MinMaxScaler	Normalizes data to a common range, usually 0 to 1.
+DFFN	       Neural network where data moves from input to hidden layers and then output.
+ReLU	       Activation function used in hidden layers to learn complex patterns.
+Linear Activation	Produces continuous output values, suitable for regression.
+MSE	Mean Squared Error measures the difference between actual and predicted values.
+Adam	Optimizer used to update weights and reduce prediction error.
+Result
+The Deep Feed Forward Neural Network was successfully trained for a regression task and used to predict continuous values for new test samples.
 
 from keras.models import Sequential
 from keras.layers import Dense
@@ -403,216 +431,182 @@ for i in range(len(Xnew)):
     print("X=%s, Predicted=%s" % (Xnew[i], Ynew[i]))
 
 5A. Evaluating Feed Forward Deep Network for Regression using K-Fold Cross Validation
-import numpy as np
+
+This program uses a Deep Feed Forward Neural Network to perform regression and predict continuous diabetes progression values.
+The model has two hidden layers with ReLU activation, while StandardScaler standardizes the input data.
+The model is evaluated using 10-Fold Cross Validation and MSE, then displays predicted and actual values for 3 test samples.
+
+Term	Explanation
+Regression	Predicts continuous numerical values.
+StandardScaler	Standardizes input features to a similar scale.
+Pipeline	Combines data scaling and neural network training into one process.
+K-Fold Cross Validation	Divides data into multiple parts for reliable model evaluation.
+10-Fold	Divides the dataset into 10 parts and evaluates the model 10 times.
+MSE	Mean Squared Error measures the difference between actual and predicted values.
+ReLU	Activation function used in hidden layers.
+Adam	Optimizer used to reduce model error.
+Result
+The Deep Feed Forward Neural Network was successfully evaluated using 10-Fold Cross Validation, and its regression performance was measured using Mean Squared Error (MSE).
+
 from keras.models import Sequential
 from keras.layers import Dense, Input
 from scikeras.wrappers import KerasRegressor
-
 from sklearn.datasets import load_diabetes
-from sklearn.model_selection import (
-    cross_val_score,
-    KFold,
-    train_test_split
-)
+from sklearn.model_selection import cross_val_score, KFold, train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 
-# -----------------------------------
-# Load Built-in Regression Dataset
-# -----------------------------------
+# Load Dataset
 data = load_diabetes()
+X, Y = data.data, data.target
 
-X = data.data
-Y = data.target
-
-# Display Dataset Information
-print("Number of Samples :", X.shape[0])
-print("Number of Features:", X.shape[1])
-
-print("\nFeature Names:")
-print(data.feature_names)
-
-
-# -----------------------------------
-# Create Deep Neural Network Model
-# -----------------------------------
+# Create Model
 def wider_model():
-
-    model = Sequential()
-
-    # Input Layer
-    model.add(
-        Input(shape=(X.shape[1],))
-    )
-
-    # Hidden Layer 1
-    model.add(
-        Dense(
-            15,
-            activation='relu'
-        )
-    )
-
-    # Hidden Layer 2
-    model.add(
-        Dense(
-            13,
-            activation='relu'
-        )
-    )
-
-    # Output Layer
-    model.add(
+    model = Sequential([
+        Input(shape=(X.shape[1],)),
+        Dense(15, activation='relu'),
+        Dense(13, activation='relu'),
         Dense(1)
-    )
-
-    # Compile Model
-    model.compile(
-        loss='mean_squared_error',
-        optimizer='adam'
-    )
-
+    ])
+    model.compile(loss='mse', optimizer='adam')
     return model
 
-
-# -----------------------------------
 # Create Pipeline
-# -----------------------------------
-estimators = []
+pipeline = Pipeline([
+    ('scale', StandardScaler()),
+    ('model', KerasRegressor(
+        model=wider_model,
+        epochs=100,
+        batch_size=5,
+        verbose=0
+    ))
+])
 
-estimators.append(
-    ('standardize', StandardScaler())
-)
+# 10-Fold Cross Validation
+kfold = KFold(n_splits=10, shuffle=True, random_state=1)
 
-estimators.append(
-    (
-        'mlp',
-        KerasRegressor(
-            model=wider_model,
-            epochs=100,
-            batch_size=5,
-            verbose=0
-        )
-    )
-)
-
-pipeline = Pipeline(estimators)
-
-
-# -----------------------------------
-# K-Fold Cross Validation
-# -----------------------------------
-kfold = KFold(
-    n_splits=10,
-    shuffle=True,
-    random_state=1
-)
-
-results = cross_val_score(
-    pipeline,
-    X,
-    Y,
+scores = cross_val_score(
+    pipeline, X, Y,
     cv=kfold,
     scoring='neg_mean_squared_error'
 )
 
-# Convert Negative MSE to Positive MSE
-mse_scores = -results
+print("Mean MSE:", round((-scores).mean(), 2))
+print("Std Dev :", round((-scores).std(), 2))
 
-print("\n--- Cross Validation Results ---")
-
-print(
-    "Mean MSE:",
-    mse_scores.mean()
-)
-
-print(
-    "Standard Deviation:",
-    mse_scores.std()
-)
-
-
-# -----------------------------------
-# Split Dataset for Testing
-# -----------------------------------
+# Split and Train
 X_train, X_test, Y_train, Y_test = train_test_split(
-    X,
-    Y,
-    test_size=0.2,
-    random_state=0
+    X, Y, test_size=0.2, random_state=0
 )
 
-
-# -----------------------------------
-# Train Pipeline
-# -----------------------------------
-pipeline.fit(
-    X_train,
-    Y_train
-)
-
-
-# -----------------------------------
-# Make Predictions
-# -----------------------------------
+pipeline.fit(X_train, Y_train)
 predictions = pipeline.predict(X_test)
 
+# Show 3 Test Samples
+for i in range(3):
+    print("\n--- Test Sample", i + 1, "---")
 
-# -----------------------------------
-# Display Test Data
-# -----------------------------------
-print("\n================================")
-print("TEST DATA WITH FEATURE NAMES")
-print("================================")
-
-
-for i in range(5):
-
-    print("\n================================")
-    print("Test Sample", i + 1)
-    print("================================")
-
-    # Display Feature Names and Values
-    for feature_name, value in zip(
-        data.feature_names,
-        X_test[i]
+    # Show Only 5 Features
+    for name, value in zip(
+        data.feature_names[:5],
+        X_test[i][:5]
     ):
+        print(f"{name}: {value:.4f}")
 
-        print(
-            f"{feature_name:15s} : {value:.4f}"
-        )
+    print("Predicted:", round(predictions[i], 2))
+    print("Actual   :", round(Y_test[i], 2))
 
-    print("--------------------------------")
+5B. 
+Explanation
+This program uses a Feed Forward Neural Network to classify Iris flowers into 3 different classes.
+The network uses ReLU activation in hidden layers and Softmax activation in the output layer for multi-class classification.
+The model is evaluated using 5-Fold Cross Validation, and the average accuracy is calculated.
 
-    # Predicted Value
-    print(
-        "Predicted Value:",
-        round(predictions[i], 2)
+Important Terms
+Term	Explanation
+Multi-Class Classification	Classification problem with more than two classes.
+Iris Dataset	Built-in dataset containing 3 flower classes.
+Feed Forward Network	Data moves from input layer to hidden layers and then output layer.
+ReLU	Activation function used in hidden layers.
+Softmax	Converts outputs into probabilities for multiple classes.
+Sparse Categorical Cross-Entropy	Loss function used when class labels are integers like 0, 1, and 2.
+K-Fold Cross Validation	Divides data into K parts for repeated training and testing.
+5-Fold	The model is trained and evaluated 5 times using different data splits.
+Mean Accuracy	Average accuracy across all folds.
+Result
+The Feed Forward Neural Network successfully performs multi-class classification and is evaluated using 5-Fold Cross Validation to obtain reliable average accuracy.
+
+from keras.models import Sequential
+from keras.layers import Dense, Input
+from scikeras.wrappers import KerasClassifier
+from sklearn.datasets import load_iris
+from sklearn.model_selection import KFold, cross_val_score
+
+# Load Dataset
+data = load_iris()
+X, Y = data.data, data.target
+
+# Create Feed Forward Network
+def create_model():
+    model = Sequential([
+        Input(shape=(4,)),
+        Dense(8, activation='relu'),
+        Dense(6, activation='relu'),
+        Dense(3, activation='softmax')
+    ])
+
+    model.compile(
+        loss='sparse_categorical_crossentropy',
+        optimizer='adam',
+        metrics=['accuracy']
     )
 
-    # Actual Value
-    print(
-        "Actual Value   :",
-        round(Y_test[i], 2)
-    )
+    return model
 
-What is K-Fold Cross Validation?
-K-Fold Cross Validation divides the dataset into K equal parts and evaluates the model K times using different test folds.
+# Create Classifier
+classifier = KerasClassifier(
+    model=create_model,
+    epochs=100,
+    batch_size=10,
+    verbose=0
+)
 
-Why use StandardScaler?
-It standardizes features so that all inputs have similar scales.
+# K-Fold Cross Validation
+kfold = KFold(
+    n_splits=5,
+    shuffle=True,
+    random_state=1
+)
 
-**Why use Regression?**
-Regression is used to predict continuous numerical values. In this program, the model predicts a quantitative measure of diabetes disease progression.
+# Evaluate Model
+scores = cross_val_score(
+    classifier,
+    X,
+    Y,
+    cv=kfold,
+    scoring='accuracy'
+)
 
-**What is MSE?**
-Mean Squared Error (MSE) measures the average squared difference between the actual and predicted values. A lower MSE indicates better model performance.
-
-**Result**
-A Feed Forward Deep Neural Network was successfully implemented and evaluated for a regression task using 10-Fold Cross Validation. The input data was standardized using StandardScaler, and the average model performance was measured using Mean Squared Error (MSE) and Standard Deviation. The trained model was also used to predict values for test samples and compare them with actual values.
+print("Fold Accuracy:", scores)
+print("Mean Accuracy: %.2f%%" % (scores.mean() * 100))
 
 6.  implementing regularization to avoid overfitting in binary
 classification.
+
+This program uses a Feed Forward Neural Network with L1 and L2 regularization for binary classification on the make_moons dataset.
+Regularization helps reduce overfitting by adding penalties to large network weights.
+The graph compares training and testing accuracy over 100 epochs.
+Term	Explanation
+Binary Classification	Predicts one of two classes: 0 or 1.
+Feed Forward Network	Data moves from input to hidden layer and then output layer.
+L1 Regularization	Adds a penalty based on absolute weight values and can encourage some weights toward zero.
+L2 Regularization	Adds a penalty based on squared weight values and discourages very large weights.
+Overfitting	When a model performs well on training data but poorly on unseen test data.
+ReLU	Activation function used in the hidden layer.
+Sigmoid	Produces output between 0 and 1 for binary classification.
+Result
+The neural network successfully performs binary classification, while L1 and L2 regularization help control overfitting and improve generalization.
+
 from matplotlib import pyplot
 from sklearn.datasets import make_moons
 from keras.models import Sequential
@@ -671,24 +665,25 @@ pyplot.ylabel("Accuracy")
 pyplot.legend()
 pyplot.show()
 
-
-VWhat is L1 Regularization?
-
-Adds the absolute value of weights to the loss function.
-Can reduce some weights to zero.
-
-What is L2 Regularization?
-
-Adds the squared value of weights to the loss function.
-Prevents weights from becoming too large.
-
-Why use both L1 and L2?
-
-L1 performs feature selection.
-L2 improves model stability.
-Together they help reduce overfitting and improve generalization.
-
 7. Demonstrate Recurrent Neural Network (RNN) that learns to perform sequence analysis for stock price prediction
+
+This program uses a Recurrent Neural Network (RNN) to predict stock prices based on the previous 3 price values.
+The stock prices are normalized using MinMaxScaler, and SimpleRNN learns the sequential pattern in the data.
+Finally, predicted prices are converted back to the original scale and compared with actual prices using a graph.
+
+Term	Explanation
+RNN	A neural network designed to process sequential or time-series data.
+SimpleRNN	A basic RNN layer that remembers information from previous time steps.
+Sequence	A group of consecutive values used for prediction.
+Time Series Data	Data collected in a time-based order, such as stock prices.
+MinMaxScaler	Normalizes values to a common range, usually 0 to 1.
+tanh	Activation function commonly used in RNNs to learn sequential patterns.
+Dense Layer	Output layer that produces the predicted stock price.
+MSE	Mean Squared Error measures the difference between actual and predicted values.
+Adam	Optimizer used to reduce prediction error during training.
+Result
+The RNN model successfully learns patterns from previous stock prices and predicts future values, which are compared with actual prices using a graph.
+
 import numpy as np
 import matplotlib.pyplot as plt
 from keras.models import Sequential
@@ -782,6 +777,27 @@ Result
 The Recurrent Neural Network successfully learned patterns from stock price sequences and predicted future stock prices. The graph generated using plt.show() displays both actual and predicted stock prices for comparison.
 
 8. Performing encoding and decoding of images using deep autoencoder
+
+This program uses an Autoencoder Neural Network to compress and reconstruct images from the MNIST handwritten digit dataset.
+The Encoder compresses each 28×28 image from 784 values to 64 values, while the Decoder reconstructs it back to 784 values.
+Finally, the program displays the Original, Encoded, and Decoded images for comparison.
+
+Term	Explanation
+Autoencoder	Neural network used to compress and reconstruct input data.
+MNIST Dataset	Dataset containing handwritten digit images from 0 to 9.
+Encoder	Compresses input data into a smaller representation.
+Decoder	Reconstructs the original data from the compressed representation.
+Dense Layer	Fully connected neural network layer.
+ReLU	Activation function used in the encoder to learn important features.
+Sigmoid	Produces output values between 0 and 1, matching normalized pixel values.
+Normalization	Converts pixel values from 0–255 into the range 0–1.
+Binary Cross-Entropy	Loss function used to measure reconstruction error between original and decoded images.
+Original Image	Actual input handwritten digit image.
+Encoded Image	Compressed 64-value representation displayed as 8×8.
+Decoded Image	Reconstructed image produced by the decoder.
+Result
+The Autoencoder successfully compresses MNIST images into a smaller 64-value representation and reconstructs them back into 28×28 images for visual comparison.
+
 import numpy as np
 import matplotlib.pyplot as plt
 from keras.datasets import mnist
@@ -869,238 +885,66 @@ for i in range(5):
 plt.tight_layout()
 plt.show()
 
-Viva Questions
+9. Aim: Implemention of convolutional neuarl netwrok to predict numbers from number images
 
-What is an Autoencoder?
-An autoencoder is a neural network that learns to compress (encode) input data and then reconstruct (decode) it with minimal loss of information.
+This program uses a Convolutional Neural Network (CNN) to recognize handwritten numbers from the MNIST dataset.
+The CNN extracts image features using convolution and pooling layers, then predicts one of 10 digit classes from 0 to 9.
+Finally, 5 test images are displayed with their predicted and actual numbers.
+Term	Explanation
+CNN	Neural network specially designed for image processing and classification.
+MNIST	Dataset containing handwritten digit images from 0 to 9..
+ReLU	Activation function that helps the network learn non-linear patterns.
+Dense Layer	Fully connected layer used for final classification.
+Softmax	Produces probabilities for the 10 digit classes.
+Sparse Categorical Cross-Entropy	Loss function used for multi-class classification with integer labels.
+Adam	Optimizer used to update weights and reduce prediction error.
 
-What is Encoding?
-Encoding is the process of converting input data into a lower-dimensional representation.
+Result
+The CNN model successfully learns features from handwritten digit images and predicts numbers from 0 to 9, displaying both the predicted and actual digit for comparison.
 
-What is Decoding?
-Decoding reconstructs the original data from the encoded representation.
 
-Why is the decoded image sometimes blurry?
-The decoded image may appear blurry because some information is lost during compression, especially when the encoded representation is much smaller than the original image or when the model has not been trained sufficiently.
-
-Applications of Autoencoders
-
-Image Compression
-Image Denoising
-Feature Extraction
-Dimensionality Reduction
-Anomaly Detection
-
-10. Aim: Denoising of images using autoencoder. 
-import keras
-from keras.datasets import mnist
-from keras import layers
 import numpy as np
 import matplotlib.pyplot as plt
+from keras.datasets import mnist
+from keras.models import Sequential
+from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 
 # Load MNIST Dataset
-(X_train, _), (X_test, _) = mnist.load_data()
-
-# Normalize Images
-X_train = X_train.astype('float32') / 255.
-X_test = X_test.astype('float32') / 255.
-
-# Reshape Images
-X_train = X_train.reshape((len(X_train), 28, 28, 1))
-X_test = X_test.reshape((len(X_test), 28, 28, 1))
-
-# Add Gaussian Noise
-noise_factor = 0.5
-
-X_train_noisy = X_train + noise_factor * np.random.normal(
-    loc=0.0,
-    scale=1.0,
-    size=X_train.shape
-)
-
-X_test_noisy = X_test + noise_factor * np.random.normal(
-    loc=0.0,
-    scale=1.0,
-    size=X_test.shape
-)
-
-# Clip values between 0 and 1
-X_train_noisy = np.clip(X_train_noisy, 0., 1.)
-X_test_noisy = np.clip(X_test_noisy, 0., 1.)
-
-# Build Autoencoder
-input_img = keras.Input(shape=(28, 28, 1))
-
-# Encoder
-x = layers.Conv2D(32, (3,3), activation='relu', padding='same')(input_img)
-x = layers.MaxPooling2D((2,2), padding='same')(x)
-
-x = layers.Conv2D(32, (3,3), activation='relu', padding='same')(x)
-encoded = layers.MaxPooling2D((2,2), padding='same')(x)
-
-# Decoder
-x = layers.Conv2D(32, (3,3), activation='relu', padding='same')(encoded)
-x = layers.UpSampling2D((2,2))(x)
-
-x = layers.Conv2D(32, (3,3), activation='relu', padding='same')(x)
-x = layers.UpSampling2D((2,2))(x)
-
-decoded = layers.Conv2D(
-    1,
-    (3,3),
-    activation='sigmoid',
-    padding='same'
-)(x)
-
-# Create Model
-autoencoder = keras.Model(input_img, decoded)
-
-# Compile Model
-autoencoder.compile(
-    optimizer='adam',
-    loss='binary_crossentropy'
-)
-
-# Train Model
-autoencoder.fit(
-    X_train_noisy,
-    X_train,
-    epochs=3,
-    batch_size=128,
-    shuffle=True,
-    validation_data=(X_test_noisy, X_test),
-    verbose=1
-)
-
-# Predict Denoised Images
-predictions = autoencoder.predict(X_test_noisy)
-
-# -------------------- Display Results --------------------
-
-n = 10
-
-fig, axes = plt.subplots(3, n, figsize=(20,6))
-
-for i in range(n):
-
-    # Original Images
-    axes[0, i].imshow(X_test[i].reshape(28,28), cmap='gray')
-    axes[0, i].axis('off')
-
-    # Noisy Images
-    axes[1, i].imshow(X_test_noisy[i].reshape(28,28), cmap='gray')
-    axes[1, i].axis('off')
-
-    # Denoised Images
-    axes[2, i].imshow(predictions[i].reshape(28,28), cmap='gray')
-    axes[2, i].axis('off')
-
-# Row Labels
-axes[0,0].set_ylabel("Original", fontsize=14)
-axes[1,0].set_ylabel("Noisy", fontsize=14)
-axes[2,0].set_ylabel("Denoised", fontsize=14)
-
-plt.suptitle("Denoising of Images using Autoencoder", fontsize=18)
-
-plt.tight_layout()
-plt.show()
-
-Viva Questions
-
-1. What is image denoising?
-Image denoising is the process of removing unwanted noise from an image while preserving its important features.
-
-2. What is an autoencoder?
-An autoencoder is a neural network that learns to compress (encode) data into a lower-dimensional representation and then reconstruct (decode) it back to its original form.
-
-3. Why is the MNIST dataset used?
-The MNIST dataset is a standard benchmark dataset containing handwritten digit images. It is widely used to demonstrate image processing and deep learning techniques.
-
-4. What is the purpose of adding noise?
-Noise is added so that the autoencoder can learn to reconstruct the original clean image from a noisy input.
-
-5. What is the role of the encoder?
-The encoder extracts important features and compresses the input image into a smaller representation.
-
-6. What is the role of the decoder?
-The decoder reconstructs the original image from the compressed representation generated by the encoder.
-
-7. Why is the Adam optimizer used?
-Adam provides fast and efficient training by automatically adjusting the learning rate during optimization.
-
-9. Aim: Implementation of convolutional neural network to predict numbers
-from number images
-
-
-9.... Implementation of convolutional neural network to predict numbers
-from number images
-
-from keras.datasets import mnist
-from keras.utils import to_categorical
-from keras.models import Sequential
-from keras.layers import Dense, Conv2D, Flatten
-import matplotlib.pyplot as plt
-
-# Download MNIST dataset and split into training and testing sets
 (X_train, Y_train), (X_test, Y_test) = mnist.load_data()
 
-# Display the first image
-plt.imshow(X_train[0], cmap='gray')
-plt.title("First Image")
-plt.axis('off')
-plt.show()
+# Use Smaller Dataset for Faster Execution
+X_train = X_train[:10000]
+Y_train = Y_train[:10000]
+X_test = X_test[:5]
+Y_test = Y_test[:5]
 
-# Display image shape
-print("Shape of first image:", X_train[0].shape)
+# Normalize Data
+X_train = X_train.astype("float32") / 255.0
+X_test = X_test.astype("float32") / 255.0
 
-# Reshape images
-X_train = X_train.reshape(60000, 28, 28, 1)
-X_test = X_test.reshape(10000, 28, 28, 1)
-
-# Normalize pixel values
-X_train = X_train.astype('float32') / 255
-X_test = X_test.astype('float32') / 255
-
-# Convert labels to one-hot encoding
-Y_train = to_categorical(Y_train)
-Y_test = to_categorical(Y_test)
-
-# Display first encoded label
-print("First Label (One-Hot Encoded):")
-print(Y_train[0])
+# Reshape Images
+X_train = X_train.reshape(-1, 28, 28, 1)
+X_test = X_test.reshape(-1, 28, 28, 1)
 
 # Create CNN Model
-model = Sequential()
+model = Sequential([
+    Conv2D(32, (3, 3),
+           activation='relu',
+           input_shape=(28, 28, 1)),
 
-# Convolution Layer 1
-model.add(
-    Conv2D(
-        64,
-        kernel_size=(3,3),
-        activation='relu',
-        input_shape=(28,28,1)
-    )
-)
+    MaxPooling2D((2, 2)),
 
-# Convolution Layer 2
-model.add(
-    Conv2D(
-        32,
-        kernel_size=(3,3),
-        activation='relu'
-    )
-)
+    Flatten(),
 
-# Flatten Layer
-model.add(Flatten())
+    Dense(64, activation='relu'),
 
-# Output Layer
-model.add(Dense(10, activation='softmax'))
+    Dense(10, activation='softmax')
+])
 
 # Compile Model
 model.compile(
     optimizer='adam',
-    loss='categorical_crossentropy',
+    loss='sparse_categorical_crossentropy',
     metrics=['accuracy']
 )
 
@@ -1108,16 +952,138 @@ model.compile(
 model.fit(
     X_train,
     Y_train,
-    validation_data=(X_test, Y_test),
-    epochs=3,
-    batch_size=128
+    epochs=5,
+    batch_size=64,
+    verbose=1
 )
 
-# Predict first four test images
-predictions = model.predict(X_test[:4])
+# Predict Numbers
+predictions = model.predict(X_test)
 
-print("\nPredicted Probabilities:")
-print(predictions)
+# Display Results
+plt.figure(figsize=(10, 4))
 
-print("\nActual Labels:")
-print(Y_test[:4])
+for i in range(5):
+
+    predicted_number = np.argmax(predictions[i])
+
+    plt.subplot(1, 5, i + 1)
+
+    plt.imshow(
+        X_test[i].reshape(28, 28),
+        cmap='gray'
+    )
+
+    plt.title(
+        f"Pred: {predicted_number}\n"
+        f"Actual: {Y_test[i]}"
+    )
+
+    plt.axis("off")
+
+plt.tight_layout()
+plt.show()
+
+
+10. Aim: Denoising of images using autoencoder. 
+
+This program uses a Convolutional Autoencoder to remove noise from MNIST handwritten digit images.
+Artificial Gaussian noise is added to the original images, and the model learns to reconstruct clean images from noisy inputs.
+Finally, it displays the Original, Noisy, and Denoised images for comparison.
+
+Important Terms
+Term	Explanation
+Autoencoder	Neural network that learns to reconstruct input data.
+Denoising Autoencoder	Removes noise and reconstructs a cleaner image.
+MNIST	Dataset of handwritten digit images from 0 to 9.
+Gaussian Noise	Random noise added to image pixels.
+Conv2D	Extracts important image features such as edges and shapes.
+MaxPooling2D	Reduces image size and creates a compressed representation.
+UpSampling2D	Increases feature-map size during reconstruction.
+Encoder	Compresses and extracts important features from the noisy image.
+Decoder	Reconstructs the clean image from learned features.
+Sigmoid	Produces output pixel values between 0 and 1.
+Binary Cross-Entropy	Measures difference between original and reconstructed images.
+Result
+
+The Convolutional Autoencoder successfully learns to reduce noise from handwritten digit images and reconstruct cleaner versions of the noisy inputs.
+
+import keras
+from keras.datasets import mnist
+from keras import layers
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load and Normalize Data
+(X_train, _), (X_test, _) = mnist.load_data()
+
+X_train = X_train[:5000] / 255.0
+X_test = X_test[:5] / 255.0
+
+X_train = X_train.reshape(-1, 28, 28, 1)
+X_test = X_test.reshape(-1, 28, 28, 1)
+
+# Add Noise
+X_train_noisy = np.clip(
+    X_train + 0.5 * np.random.normal(size=X_train.shape), 0, 1
+)
+
+X_test_noisy = np.clip(
+    X_test + 0.5 * np.random.normal(size=X_test.shape), 0, 1
+)
+
+# Create Autoencoder
+model = keras.Sequential([
+    layers.Conv2D(16, 3, activation='relu',
+                  padding='same',
+                  input_shape=(28, 28, 1)),
+
+    layers.MaxPooling2D(2, padding='same'),
+
+    layers.Conv2D(16, 3, activation='relu',
+                  padding='same'),
+
+    layers.UpSampling2D(2),
+
+    layers.Conv2D(1, 3, activation='sigmoid',
+                  padding='same')
+])
+
+# Compile and Train
+model.compile(
+    optimizer='adam',
+    loss='binary_crossentropy'
+)
+
+model.fit(
+    X_train_noisy,
+    X_train,
+    epochs=3,
+    batch_size=128,
+    verbose=1
+)
+
+# Predict Denoised Images
+predictions = model.predict(X_test_noisy)
+
+# Display Results
+for i in range(5):
+
+    plt.figure(figsize=(8, 2))
+
+    plt.subplot(1, 3, 1)
+    plt.imshow(X_test[i].reshape(28, 28), cmap='gray')
+    plt.title("Original")
+    plt.axis('off')
+
+    plt.subplot(1, 3, 2)
+    plt.imshow(X_test_noisy[i].reshape(28, 28), cmap='gray')
+    plt.title("Noisy")
+    plt.axis('off')
+
+    plt.subplot(1, 3, 3)
+    plt.imshow(predictions[i].reshape(28, 28), cmap='gray')
+    plt.title("Denoised")
+    plt.axis('off')
+
+    plt.show()
