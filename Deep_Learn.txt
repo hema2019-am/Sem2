@@ -94,29 +94,41 @@ Problem statement: the given dataset comprises of health information about diabe
 patient. we need to create deep feed forward network that will classify women suffering from
 diabetes mellitus as 1.
 
-import pandas as pd
 import numpy as np
 from keras.models import Sequential
-from keras.layers import Dense
+from keras.layers import Dense, Input
 from sklearn.model_selection import train_test_split
+from sklearn.datasets import load_breast_cancer
+from sklearn.preprocessing import StandardScaler
 
-# Load Dataset
-dataset = pd.read_csv("diabetes.csv")
+# Load Built-in Dataset
+dataset = load_breast_cancer()
 
 # Input and Output
-X = dataset.iloc[:, 0:8].values
-Y = dataset.iloc[:, 8].values
+X = dataset.data
+Y = dataset.target
 
 # Split Dataset
 X_train, X_test, Y_train, Y_test = train_test_split(
-    X, Y, test_size=0.2, random_state=0
+    X, Y,
+    test_size=0.2,
+    random_state=0
 )
+
+# Scale Input Data
+scaler = StandardScaler()
+
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
 
 # Create Deep Neural Network
 model = Sequential()
 
+# Input Layer
+model.add(Input(shape=(X_train.shape[1],)))
+
 # Hidden Layers
-model.add(Dense(12, input_dim=8, activation='relu'))
+model.add(Dense(12, activation='relu'))
 model.add(Dense(8, activation='relu'))
 
 # Output Layer
@@ -130,19 +142,62 @@ model.compile(
 )
 
 # Train Model
-model.fit(X_train, Y_train, epochs=100, batch_size=10)
+model.fit(
+    X_train_scaled,
+    Y_train,
+    epochs=100,
+    batch_size=10
+)
 
 # Evaluate Model
-loss, accuracy = model.evaluate(X_test, Y_test)
+loss, accuracy = model.evaluate(
+    X_test_scaled,
+    Y_test
+)
 
-print("Accuracy: %.2f%%" % (accuracy * 100))
+print("\nAccuracy: %.2f%%" % (accuracy * 100))
 
-# Predictions
-predictions = model.predict(X_test)
+# Make Predictions
+predictions = model.predict(X_test_scaled)
+
+# Display 5 Test Samples
+print("\n--- Test Results with Feature Names ---")
 
 for i in range(5):
-    print("Prediction:", round(predictions[i][0]),
-          "Actual:", Y_test[i])
+
+    predicted_class = int(predictions[i][0] >= 0.5)
+
+    print("\n==============================")
+    print("Test Sample", i + 1)
+    print("==============================")
+
+    # Print Feature Names and Values
+    for feature_name, value in zip(
+        dataset.feature_names,
+        X_test[i]
+    ):
+        print(
+            f"{feature_name:30s} : {value:.4f}"
+        )
+
+    print("------------------------------")
+
+    # Predicted Result
+    print(
+        "Prediction :",
+        predicted_class,
+        "-",
+        dataset.target_names[predicted_class]
+    )
+
+    # Actual Result
+    print(
+        "Actual     :",
+        Y_test[i],
+        "-",
+        dataset.target_names[Y_test[i]]
+    )
+
 
 4A.  Aim: Using deep feed forward network with two hidden layers for
 performing classification and predicting the class.
@@ -348,35 +403,70 @@ for i in range(len(Xnew)):
     print("X=%s, Predicted=%s" % (Xnew[i], Ynew[i]))
 
 5A. Evaluating Feed Forward Deep Network for Regression using K-Fold Cross Validation
-import pandas as pd
+import numpy as np
 from keras.models import Sequential
-from keras.layers import Dense
+from keras.layers import Dense, Input
 from scikeras.wrappers import KerasRegressor
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import KFold
+
+from sklearn.datasets import load_diabetes
+from sklearn.model_selection import (
+    cross_val_score,
+    KFold,
+    train_test_split
+)
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 
-# Load Dataset
-dataframe = pd.read_csv("housing.csv", delim_whitespace=True, header=None)
+# -----------------------------------
+# Load Built-in Regression Dataset
+# -----------------------------------
+data = load_diabetes()
 
-dataset = dataframe.values
-X = dataset[:, 0:13]
-Y = dataset[:, 13]
+X = data.data
+Y = data.target
 
-# Create Model
+# Display Dataset Information
+print("Number of Samples :", X.shape[0])
+print("Number of Features:", X.shape[1])
+
+print("\nFeature Names:")
+print(data.feature_names)
+
+
+# -----------------------------------
+# Create Deep Neural Network Model
+# -----------------------------------
 def wider_model():
+
     model = Sequential()
 
-    model.add(Dense(15,
-                    input_dim=13,
-                    activation='relu'))
+    # Input Layer
+    model.add(
+        Input(shape=(X.shape[1],))
+    )
 
-    model.add(Dense(13,
-                    activation='relu'))
+    # Hidden Layer 1
+    model.add(
+        Dense(
+            15,
+            activation='relu'
+        )
+    )
 
-    model.add(Dense(1))
+    # Hidden Layer 2
+    model.add(
+        Dense(
+            13,
+            activation='relu'
+        )
+    )
 
+    # Output Layer
+    model.add(
+        Dense(1)
+    )
+
+    # Compile Model
     model.compile(
         loss='mean_squared_error',
         optimizer='adam'
@@ -384,22 +474,34 @@ def wider_model():
 
     return model
 
-# Pipeline
+
+# -----------------------------------
+# Create Pipeline
+# -----------------------------------
 estimators = []
-estimators.append(('standardize', StandardScaler()))
+
 estimators.append(
-    ('mlp',
-     KerasRegressor(
-         model=wider_model,
-         epochs=100,
-         batch_size=5,
-         verbose=0
-     ))
+    ('standardize', StandardScaler())
+)
+
+estimators.append(
+    (
+        'mlp',
+        KerasRegressor(
+            model=wider_model,
+            epochs=100,
+            batch_size=5,
+            verbose=0
+        )
+    )
 )
 
 pipeline = Pipeline(estimators)
 
-# K-Fold Validation
+
+# -----------------------------------
+# K-Fold Cross Validation
+# -----------------------------------
 kfold = KFold(
     n_splits=10,
     shuffle=True,
@@ -410,11 +512,89 @@ results = cross_val_score(
     pipeline,
     X,
     Y,
-    cv=kfold
+    cv=kfold,
+    scoring='neg_mean_squared_error'
 )
 
-print("Mean Score:", results.mean())
-print("Standard Deviation:", results.std())
+# Convert Negative MSE to Positive MSE
+mse_scores = -results
+
+print("\n--- Cross Validation Results ---")
+
+print(
+    "Mean MSE:",
+    mse_scores.mean()
+)
+
+print(
+    "Standard Deviation:",
+    mse_scores.std()
+)
+
+
+# -----------------------------------
+# Split Dataset for Testing
+# -----------------------------------
+X_train, X_test, Y_train, Y_test = train_test_split(
+    X,
+    Y,
+    test_size=0.2,
+    random_state=0
+)
+
+
+# -----------------------------------
+# Train Pipeline
+# -----------------------------------
+pipeline.fit(
+    X_train,
+    Y_train
+)
+
+
+# -----------------------------------
+# Make Predictions
+# -----------------------------------
+predictions = pipeline.predict(X_test)
+
+
+# -----------------------------------
+# Display Test Data
+# -----------------------------------
+print("\n================================")
+print("TEST DATA WITH FEATURE NAMES")
+print("================================")
+
+
+for i in range(5):
+
+    print("\n================================")
+    print("Test Sample", i + 1)
+    print("================================")
+
+    # Display Feature Names and Values
+    for feature_name, value in zip(
+        data.feature_names,
+        X_test[i]
+    ):
+
+        print(
+            f"{feature_name:15s} : {value:.4f}"
+        )
+
+    print("--------------------------------")
+
+    # Predicted Value
+    print(
+        "Predicted Value:",
+        round(predictions[i], 2)
+    )
+
+    # Actual Value
+    print(
+        "Actual Value   :",
+        round(Y_test[i], 2)
+    )
 
 What is K-Fold Cross Validation?
 K-Fold Cross Validation divides the dataset into K equal parts and evaluates the model K times using different test folds.
@@ -422,15 +602,14 @@ K-Fold Cross Validation divides the dataset into K equal parts and evaluates the
 Why use StandardScaler?
 It standardizes features so that all inputs have similar scales.
 
-Why use Regression?
-Regression predicts continuous values such as house prices.
+**Why use Regression?**
+Regression is used to predict continuous numerical values. In this program, the model predicts a quantitative measure of diabetes disease progression.
 
-What is MSE?
-Mean Squared Error measures the average squared difference between actual and predicted values.
+**What is MSE?**
+Mean Squared Error (MSE) measures the average squared difference between the actual and predicted values. A lower MSE indicates better model performance.
 
-Result
-
-A Feed Forward Deep Neural Network was successfully evaluated for a regression task using 10-Fold Cross Validation, and the average model performance was measured using regression metrics.
+**Result**
+A Feed Forward Deep Neural Network was successfully implemented and evaluated for a regression task using 10-Fold Cross Validation. The input data was standardized using StandardScaler, and the average model performance was measured using Mean Squared Error (MSE) and Standard Deviation. The trained model was also used to predict values for test samples and compare them with actual values.
 
 6.  implementing regularization to avoid overfitting in binary
 classification.
