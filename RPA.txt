@@ -1,0 +1,562 @@
+Practical 1(a): Create a Simple Sequence-Based Project
+Open UiPath Studio.
+Click Home → New Project → Process.
+Enter the project name and click Create.
+Open Main.xaml.
+Drag a Sequence activity into the Designer.
+Drag two Input Dialog activities inside the Sequence.
+Drag one Message Box activity below the Input Dialogs.
+Configure the first Input Dialog:
+Dialog Title: PrintingNames
+Input Label: First Name
+Input Type: Text Box
+Value Entered: FirstName
+Configure the second Input Dialog:
+Dialog Title: PrintingNames
+Input Label: Last Name
+Input Type: Text Box
+Value Entered: LastName
+In the Message Box, enter: FirstName + " " + LastName
+Click Run or Debug File.
+
+Practical 1(b): Create a Flowchart-Based Project
+Create a new Process.
+Open Main.xaml.
+Click New → Flowchart.
+Name the Flowchart and click Create.
+Drag an Input Dialog into the Flowchart.
+Drag a Message Box into the Flowchart.
+Connect Start → Input Dialog → Message Box.
+Configure the Input Dialog:
+Dialog Title: College Name
+Input Label: Enter your college name
+Value Entered: Result
+In the Message Box, set the text as: Result
+Click Run.
+
+
+Practical 1(c): Number Calculation (Addition, Subtraction, Multiplication, Division)
+Create a new Process.
+Open Main.xaml.
+Drag a Sequence activity.
+Add two Input Dialog activities.
+Create two variables:
+FirstNum (Int32)
+SecondNum (Int32)
+Store the values entered in the Input Dialogs into these variables.
+Add four Message Box activities.
+Configure the Message Boxes:
+
+Addition:
+
+"Addition: " + (FirstNum + SecondNum).ToString
+
+Subtraction:
+
+"Subtraction: " + (FirstNum - SecondNum).ToString
+
+Multiplication:
+
+"Multiplication: " + (FirstNum * SecondNum).ToString
+
+Division:
+
+"Division: " + (FirstNum / SecondNum).ToString
+Click Run.
+
+Practical 1(d): Different Types of Variables
+Create a new Process.
+Open Main.xaml.
+Drag a Sequence activity.
+Create the following variables:
+intVar – Int32
+boolVar – Boolean
+dateVar – DateTime
+genericVar – GenericValue
+arrayVar – Array of String
+dtVar – DataTable
+Assign values to each variable.
+Drag For Each Row in Data table
+Add a Message Box for each variable in For Each Row body.
+Display the variable values using .ToString().
+For first message add CurrentRow("Value").ToString
+Click Run.
+
+Practical 2(a): Count Names Starting with "A"
+Open UiPath Studio.
+Create a new Process project.
+Open Main.xaml.
+Drag a Sequence activity.
+Create the following variables:
+names – Array of String
+currentText – String
+firstLetter – String
+counter – Int32 (Default value = 0)
+Add an Assign activity.
+
+Store the array in names.
+
+{"Ajay","Rahul","Anita","Vishal","Aman"}
+Drag a For Each activity.
+Set Values = names.
+Set TypeArgument = String.
+Inside the For Each, add an Assign activity.
+
+Assign:
+
+firstLetter = if(String.IsNullOrEmpty(currentText),"",currentText.Substring(0, 1))
+Add an If activity.
+
+Set the condition:
+
+firstLetter.ToLower.Equals("a")
+Inside Then, add an Assign activity.
+
+Increment the counter:
+counter = counter + 1
+Inside Else : 
+Add Write Line : with text "Name doesn't start with a:   "+ currentText
+After the For Each, add a Message Box.
+Display:
+"Total names starting with A : " + counter.ToString
+Click Run.
+
+Practical 2(b): Switch Statement
+Create a new Process.
+Open Main.xaml.
+Drag a Sequence activity.
+Add an Input Dialog activity.
+Create a variable:
+Number – Int32
+Store the input in Number.
+Drag a Switch activity.
+
+Set the Expression to:
+
+Number
+Set TypeArgument = Int32.
+Add Cases:
+Case 1
+Case 2
+Case 3
+Case 4
+Case 5
+Add a Message Box in each case.
+
+Display:
+
+"Number entered is 1"
+
+(Similarly for Cases 2, 3, 4, and 5.)
+
+Add a Default case.
+
+Display:
+
+"Invalid Number"
+Click Run.
+
+Practical 2(c): Print Numbers from 1 to 10
+Create a new Process.
+Open Main.xaml.
+Drag a Sequence activity.
+Create a variable:
+Int – Int32 (Default = 1)
+Drag a Do While activity.
+Inside the Body, add a Write Line activity.
+Display:
+Int.ToString
+Add an Assign activity below the Write Line.
+
+Assign:
+
+Int = Int + 1
+
+Set the Condition:
+
+Int < 11
+Click Run.
+
+Practical 3(a): Do While (Print 5 to 1)
+Create a new Process.
+Open Main.xaml.
+Drag a Sequence activity.
+Create a variable:
+Int – Int32 (Default = 5)
+Add a Do While activity.
+Inside the Body, add a Write Line activity.
+
+Display:
+
+Int.ToString
+Add an Assign activity.
+
+Assign:
+
+Int = Int - 1
+
+Set the Condition:
+
+Int > 0
+Click Run.
+
+Practical 3(b): Delay Activity
+Create a new Process.
+Open Main.xaml.
+Drag a Sequence activity.
+Add a Message Box.
+Display:Before Delay
+Add a Delay activity.
+Set Duration:00:00:05
+Add another Message Box.
+Display:After Delay
+Click Run.
+
+Practical 3(c): If Condition
+Create a new Process.
+Open Main.xaml.
+Drag a Sequence activity.
+Create a variable:
+counter – Int32
+
+Assign:
+
+counter = 9
+Drag an If activity.
+
+Set the condition:
+
+counter < 10
+Inside Then, add a Message Box.
+
+Display:
+
+"True"
+Inside Else, add another Message Box.
+Display:
+"False"
+Click Run.
+
+Practical 4(a): Basic Recording Using Toolbar
+Open UiPath Studio.
+Create a new Process project.
+Open Main.xaml.
+Drag a Sequence activity.
+Open Notepad.
+Click App/Web Recorder from the Design ribbon.
+Indicate the Notepad window.
+Click inside the Notepad text area.
+Enter the text you want to type.
+Click Confirm.
+(Optional) Record clicking Format → Font in Notepad.
+Select a font, style, and size.
+Click OK.
+Click Save.
+Click Run or Debug File.
+
+Verify that UiPath types the text and changes the font automatically.
+Practical 4(b): Desktop Recording Using Toolbar
+Create a new Process.
+Open Main.xaml.
+Drag a Sequence activity.
+Open Google Chrome.
+Drag a Use Application/Browser activity.
+Indicate the Chrome window.
+In Properties:
+Close = Never
+Input Mode = Hardware Events
+Click App/Web Recorder.
+Record clicking the search box.
+Record typing a website or search text.
+Record pressing Enter.
+Save the recording.
+Click Run.
+Verify that Chrome performs the recorded actions automatically.
+
+
+Practical 5(a): Read Excel Data into a DataTable
+Create a new Process.
+Go to rpachallenge.com and download the challenge excel file and place it in the same
+folder as the main folder. 
+Open Main.xaml.
+Create a new Sequence.
+Add a Read Range Workbook activity.
+Select the Excel file.
+Enter the Sheet Name - "Sheet 1"
+Leave the Range blank to read all data.
+Press Ctrl + K in the Output field.
+Add Use Application/Browser activity and configure it. 
+Click on Indicate application to autoamte the RPA challenge screen
+in propteries, In Options set close option to never
+Create a DataTable variable named excelData.
+Add a For Each Row in Do.
+Select excelData as the DataTable.
+Add Click activity before For Each Row 
+Click on indicate , and tell where to click -> Start -> Validate
+After For Each add Type Into block
+Enter under Type this -> CurrentRow("First Name").ToString
+Click on Indicate, then on FirstName in RPA -> validate -> confirm
+
+add Type Into block
+Enter under Type this -> CurrentRow("Phone Number").ToString
+Click on Indicate, then on PhoneNumber in RPA -> validate -> confirm
+Add Click-> click on indicate-> click on sumbit on RPA
+Verify that all Excel rows are read into the DataTable.
+
+Practical 5(b): Write DataTable to Excel
+Create a new Sequence.
+Add an Excel Process Scope activity.
+Add a Build Data Table activity, Use Excel File and Write DataTable
+Create a DataTable variable with
+First NAme , Last Name
+Add a Use Excel File activity.
+Select or create an Excel file.
+Inside it, add a Write DataTable to Excel activity.
+Select the DataTable variable.
+Set the destiation as Excel.Sheet("Data")
+Save the workflow.
+Click Run.
+Open the Excel file and verify that the data has been written successfully.
+
+
+Practical 5(c): Write Data to a Specific Cell in Excel
+Open UiPath Studio.
+Create a new Process.
+Open Main.xaml.
+Drag a Sequence activity.
+Add Assign activity, create a variable for array of int32 with default {1,2,3,4,5}
+Add For Each and Write Cell Workbook activity and config
+Add Write Cell Workbook insinde For Each and put the array variable In filed of ForEach
+in propeties set type to object and set variable for index number like currentIndex
+Fill all the fields of Write Cell Workbook and use Expression Editor to auto increment
+rows.
+first -> "ExceWrite.xlsx"
+second -> "Sheet1"
+third -> currentItem.ToString
+Click on Sheet1 + icon , open in expersion editio 
+"A" + (currentIndex + 1).ToString -> Use this formula to start writng from A1 and auto increment 
+
+Open the Excel file and verify that the value is written in the specified cell.
+
+Practical 5(d): Read Data from a Specific Cell in Excel
+Create a new Process.
+Open Main.xaml.
+Drag a Sequence activity.
+Add Excel Process Scope, Use Excel File and Read Range activities in seque
+In Use Excel File activity.
+Select the Excel file.
+Click on +icon -> Indictae-> select the daat table
+Set variable in proprtties -> Output as excelData
+
+In Read Range : Excel.Shee("Sheet1").Range("A1:G11")
+save to -> excelData
+Add Output Data Table as Text and Message box activities and configure them
+For Data Table -> Properties-> Inpput-> Add excelData. Output-> excelDataToString
+In Message Box -> excelDataToString
+Verify that the value stored in the specified cell is displayed.
+
+Practical 5(e): Append Data to an Excel Sheet
+Create a new Process.
+Open Main.xaml.
+Drag a Sequence activity
+Add Excel Process Scope, Use Excel File and Read Range activities in the sequence
+Add Use Excel File and Write DataTable to Excel activities in the sequence. 
+In Use Excel File activity.
+Select the Excel file. challenge.xlsx
+In Read Range -> Excel.Sheet("Sheet1")
+save to excelData which if Datatable type, and make it global
+In Use Excel File:Attach other excel "ExcelAppend.xlsx"
+In Write DataTable to excel
+What to write-> excelData
+Destination -> Excel.Sheet("Sheet1")
+both Append and exculde headers to be checked 
+Run File twice to see the final output. 
+Open the Excel file and verify that the new rows are appended after the existing data.
+
+Practical 5(f): Sort Data in Excel
+Create a new Process.
+Open Main.xaml.
+Drag a Sequence activity.
+Add Excel Process Scope, Use Excel File and Read Range activities to the sequence
+After that Add Sort Data Table and Write Data Table to Excel activities to the sequence. 
+Create variable for DataTable as output filed -> excelData for Read Range properties
+Select the Excel file "challenge.xlsx"
+
+In Read Range
+Excel.Sheet("Sheet1").Range("A1:G11")
+
+In a Sort Table activity
+Input -> excelData
+Output - > excelDataSort
+Index -> 0
+Oredr -> Ascending
+
+In Write DataTable to Excel
+What to write -> excelDataSort
+Destination -> Excel.Sheet("Sheet2")
+Click Run.
+Verify that the data is sorted correctly.
+
+Practical 5(g): Filter Data in Excel
+Create a new Process.
+Open Main.xaml.
+Drag a Sequence activity.
+Add Excel Process Scope, Use Excel File and Read Range activities to the sequence
+Add Filter Data Table and Write Data Table to Excel activities to the sequence.
+
+In Use Excel File select "challenege.xlsx" 
+In Read Range -> Excel.Sheet("Sheet1")
+In Filter Data Table -> Datatable -> excelData
+Filtered DataTable-> excelDataFilter
+Click on Configure Filter
+In Filter wizard , Input DataTable->excelData
+FileteredDataTable -> excelDataFilter
+Filter Rows Tab -> Keep matching rows 
+Column -> "Company Name"
+Operation -> =
+Value -> "Timepath Inc."
+And Press OK
+
+In Write DataTable to Excel
+What to write -> excelDataFilter
+Destination -> Excel.Sheet("Sheet2")
+Verify that only the filtered records are displayed.
+
+Practical 6(a): Attach Window Activity
+Create a new Process.
+Open Main.xaml.
+Step-3: To create an use Application/Browser activity perform the steps as follows
+a) First make an flow chart
+b) Then make an sequence box
+c) Inside sequence box make an use application/Browser activity
+d) Then click on indicate application to automate (click on blank notepad)
+e) There is an Do option in the use application/browser activity, drag an untitled notepad
+f) Write the content in type this option (“Automating through uipath”)
+g) Click on debug file then the notepad will be open by automation and the text will be
+written by automation as Automating through uipath.
+
+Practical 6(b): Anchor Base Activity
+Input: follow same steps as practical 5a and add find element option for finding the
+search address in web browser example
+Add Type Into activity, and enter the text
+Save the workflow.
+Click Run.
+Verify that the correct element is identified and used.
+
+Practical 8(a): Screen Scraping – Full Text
+Create a new Process.
+Open Main.xaml.
+Open the application containing text.
+Add a Use Application/Browser activity and configire it to open amazon.in
+Add Type Into activity to search for iPhone into search bar
+Make it do that it searches the text in search bar at the top of website and auto press enter
+"iphone[k(Enter)]"
+
+Start Table Extraction to automate data Scraping.
+Press on Table Extraction to Start cofiguring Data Scraping
+ Click on title and make it sure its non sponsored
+Click on extract
+Just Like Name configure other information that is to be collected
+After setting this up we can set it to automatically go tonext page using this toggle button on extractwizard
+After toggleing , use Next indication on web page
+After clicking save Extract tabeldata is auto create d
+
+Add Single Excel Process Scope inside that add Use Excel File and Write Data Table to Excel and
+configure it to save the data table to excel file. 
+USe Excel File -> "iphoneData.xlsx"
+In Write Data Table to Excel 
+What to write -> ExtractDataTable
+Destination-> Excel.Sheet("Sheet1")
+
+Remove verification for Type Into as the automation crashes. 
+
+
+Practical 8(b): Screen Scraping – Native
+Create a new Process.
+Open Main.xaml.
+a. Full Text and Native (Replaced by get text)
+Step-1: use browser/application and indicate to notepad
+Inside Do
+Step-2:Add  get text from search activities 
+Step 3 : indicate to file optionin notepad
+Step 4 - click on hamburger sign in Get Textblock and
+click on preview extraction.
+Step 5 - set on full text
+
+Practical 8(c): Screen Scraping – OCR
+Create a new Process.
+Open Main.xaml.
+Add a Get OCR Text activity.
+Select the OCR engine.
+Indicate the image or scanned document.
+Store the output in a String variable.
+Display the text using a Message Box.
+Click Run.
+
+
+Practical 8(e): Screen Scraping (PDF, Web Page, Image)
+Create a new Process.
+Open Main.xaml.
+Open the PDF, web page, or image.
+Add a Get Text or Get OCR Text activity.
+Indicate the required text.
+Store the output.
+Display it using a Message Box.
+Click Run.
+
+
+Practical 9(a): Configure Email
+Create a new Process.
+Open Main.xaml.
+Install the UiPath.Mail.Activities package if required.
+Add Send SMTP Email Activity
+In Properties-> Use Integration Service as False
+In gmail , turn on two way verification
+under gmail -> secutiry- > app secutiry -> app password
+There enter any password, After creating 
+copy the password and paste it in notepad
+
+In Properties-> Add the email "" and Password ""
+Sender -> NAme "" , From "the same password"
+
+Configure the email account.
+Enter the email credentials.
+Save the workflow.
+Click Run.
+Practical 9(b): Read Emails
+Create a new Process.
+Open Main.xaml.
+Add a Get Outlook Mail Messages or Get IMAP Mail Messages activity.
+Configure the email account.
+Store the emails in a MailMessage collection.
+Add a For Each activity.
+Display the Subject or Sender using a Message Box.
+Click Run.
+Practical 9(c): Send Email with Attachment
+Create a new Process.
+Open Main.xaml.
+Add a Send Outlook Mail Message activity.
+Enter the recipient email address.
+Enter the subject.
+Enter the email body.
+Select the attachment file.
+Save the workflow.
+Click Run.
+Practical 9(d): Save Email Attachments
+Create a new Process.
+Open Main.xaml.
+Add a Get Outlook Mail Messages activity.
+Add a Save Attachments activity.
+Select the destination folder.
+Save the workflow.
+Click Run.
+Verify that the attachments are saved.
+Practical 9(e): Reply to Email
+Create a new Process.
+Open Main.xaml.
+Read the required email.
+Add a Reply to Outlook Mail Message activity.
+Enter the reply message.
+Save the workflow.
+Click Run.
+Verify that the reply email is sent.
