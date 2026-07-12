@@ -445,6 +445,99 @@ Save the workflow.
 Click Run.
 Verify that the correct element is identified and used.
 
+
+Practical 7(a): Mouse Events (Click, Double Click, Hover)
+Click Activity
+Open UiPath Studio.
+Create a new Process.
+Open Main.xaml.
+Drag a Sequence activity.
+Open the application (Notepad or Calculator).
+Add a Use Application/Browser activity.
+Indicate the application window.
+Inside the activity, drag a Click activity.
+Indicate the button or text area to click.
+Save the workflow.
+Click Run.
+Double Click Activity
+Add a Double Click activity.
+Indicate the required UI element.
+Save the workflow.
+Click Run.
+Hover Activity
+Add a Hover activity.
+Indicate the UI element.
+Save the workflow.
+Click Run.
+
+Practical 7(b): Type Into
+Create a new Process.
+Open Main.xaml.
+Drag a Sequence activity.
+Open Notepad.
+Add a Use Application/Browser activity.
+Indicate the Notepad window.
+Drag a Type Into activity inside it.
+Indicate the text area.
+Enter the text to type.
+Save the workflow.
+Click Run.
+
+Practical 7(c): Type Secure Text
+Create a new Process.
+Open Main.xaml.
+Drag a Sequence activity.
+Add a Get Password or Input Dialog activity to accept a password.
+Store the password in a SecureString variable.
+Open the target application.
+Add a Type Secure Text activity.
+Indicate the password field.
+Select the SecureString variable.
+Save the workflow.
+Click Run.
+
+Practical 7(d): Element Trigger
+Create a new Process.
+Open Main.xaml.
+Drag a Sequence activity.
+Add a Monitor Events activity.
+Add an Element Trigger.
+Indicate the required UI element.
+Set the trigger event (Appear, Vanish, Click, etc.).
+Add a Message Box inside the trigger.
+Save the workflow.
+Click Run.
+
+Practical 7(e): Image Trigger
+Create a new Process.
+Open Main.xaml.
+Drag a Monitor Events activity.
+Add an Image Trigger.
+Indicate the image to monitor.
+Add a Message Box inside the trigger.
+Save the workflow.
+Click Run.
+
+Practical 7(f): System Trigger
+Create a new Process.
+Open Main.xaml.
+Add a Monitor Events activity.
+Add a System Trigger.
+Select the required system event.
+Add a Message Box inside the trigger.
+Save the workflow.
+Click Run.
+
+Practical 7(f): System Trigger
+Create a new Process.
+Open Main.xaml.
+Add a Monitor Events activity.
+Add a System Trigger.
+Select the required system event.
+Add a Message Box inside the trigger.
+Save the workflow.
+Click Run.
+
 Practical 8(a): Screen Scraping – Full Text
 Create a new Process.
 Open Main.xaml.
